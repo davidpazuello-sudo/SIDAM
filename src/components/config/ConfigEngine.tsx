@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Settings, 
   Database, 
@@ -41,7 +41,6 @@ type SubTab = 'dynamic_properties' | 'integrations' | 'permissions' | 'customiza
 
 export const ConfigEngine: React.FC<ConfigEngineProps> = ({ initialType, initialProperties }) => {
   const [activeSubTab, setActiveSubTab] = useState<SubTab>('dynamic_properties');
-  const [properties, setProperties] = useState<ObjectProperty[]>(initialProperties);
   const [selectedProp, setSelectedProp] = useState<ObjectProperty | null>(null);
   const [selectedObjectName, setSelectedObjectName] = useState('');
   const { branding, updateBranding } = useBranding();
@@ -54,6 +53,111 @@ export const ConfigEngine: React.FC<ConfigEngineProps> = ({ initialType, initial
     'CADIM Municipal',
     'Fila de Integrações'
   ];
+  const objectPropertyCatalog: Record<string, ObjectProperty[]> = {
+    [initialType.name]: initialProperties,
+    'Certidão de Dívida Ativa': [
+      {
+        id: 'cda-1',
+        object_type_slug: 'cda',
+        name: 'Número CDA',
+        slug: 'numero_cda',
+        data_type: 'string',
+        ui_component: 'TextInput',
+        is_required: true,
+        sort_order: 1,
+        configuration: {}
+      },
+      {
+        id: 'cda-2',
+        object_type_slug: 'cda',
+        name: 'Status da Emissão',
+        slug: 'status_emissao',
+        data_type: 'string',
+        ui_component: 'StatusBadge',
+        is_required: true,
+        sort_order: 2,
+        configuration: {}
+      }
+    ],
+    'Pagamento da Dívida Ativa': [
+      {
+        id: 'pag-1',
+        object_type_slug: 'pagamento_da',
+        name: 'Valor Pago',
+        slug: 'valor_pago',
+        data_type: 'decimal',
+        ui_component: 'CurrencyInput',
+        is_required: true,
+        sort_order: 1,
+        configuration: {}
+      },
+      {
+        id: 'pag-2',
+        object_type_slug: 'pagamento_da',
+        name: 'Meio de Pagamento',
+        slug: 'meio_pagamento',
+        data_type: 'string',
+        ui_component: 'TextInput',
+        is_required: true,
+        sort_order: 2,
+        configuration: {}
+      }
+    ],
+    'CADIM Municipal': [
+      {
+        id: 'cadim-1',
+        object_type_slug: 'cadim',
+        name: 'Status Restrição',
+        slug: 'status_restricao',
+        data_type: 'string',
+        ui_component: 'StatusBadge',
+        is_required: true,
+        sort_order: 1,
+        configuration: {}
+      },
+      {
+        id: 'cadim-2',
+        object_type_slug: 'cadim',
+        name: 'Data de Inscrição',
+        slug: 'data_inscricao',
+        data_type: 'date',
+        ui_component: 'DatePicker',
+        is_required: true,
+        sort_order: 2,
+        configuration: {}
+      }
+    ],
+    'Fila de Integrações': [
+      {
+        id: 'fila-1',
+        object_type_slug: 'integration_queue',
+        name: 'Serviço Alvo',
+        slug: 'servico_alvo',
+        data_type: 'string',
+        ui_component: 'TextInput',
+        is_required: true,
+        sort_order: 1,
+        configuration: {}
+      },
+      {
+        id: 'fila-2',
+        object_type_slug: 'integration_queue',
+        name: 'Tentativas',
+        slug: 'tentativas',
+        data_type: 'number',
+        ui_component: 'TextInput',
+        is_required: true,
+        sort_order: 2,
+        configuration: {}
+      }
+    ]
+  };
+  const activeObjectName = selectedObjectName || initialType.name;
+  const displayedProperties = objectPropertyCatalog[activeObjectName] ?? [];
+
+  useEffect(() => {
+    setSelectedProp(null);
+  }, [activeObjectName]);
 
   const renderDynamicProperties = () => (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -126,7 +230,7 @@ export const ConfigEngine: React.FC<ConfigEngineProps> = ({ initialType, initial
             </div>
             
             <div className="p-4 space-y-3">
-              {properties.map((prop) => (
+              {displayedProperties.map((prop) => (
                 <button
                   key={prop.id}
                   onClick={() => setSelectedProp(prop)}
@@ -156,6 +260,11 @@ export const ConfigEngine: React.FC<ConfigEngineProps> = ({ initialType, initial
                   </div>
                 </button>
               ))}
+              {displayedProperties.length === 0 && (
+                <div className="p-6 text-sm text-slate-500 text-center border border-dashed border-slate-200 rounded-xl bg-slate-50">
+                  Nenhuma propriedade encontrada para o objeto selecionado.
+                </div>
+              )}
             </div>
           </div>
         </div>

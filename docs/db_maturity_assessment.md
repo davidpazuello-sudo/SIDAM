@@ -199,3 +199,10 @@ O projeto já possui base arquitetural sólida para **criação do banco** e in�
 - [x] Trigger de pagamento reforçado para reduzir duplicidade lógica de outbox.
 - [x] Trilha de auditoria para mudança de `status_atual` da FDA (`sec_status_audit` + trigger dedicada).
 - [x] Casos de teste SQL para integridade e auditoria adicionados (`supabase/tests/02_data_integrity_and_audit.sql`).
+
+### Sprint 4 — Concluída (2026-03-24)
+- [x] Pipeline CI de banco criado em `.github/workflows/db-ci.yml`.
+- [x] Execução de migrações em banco efêmero com smoke test (database vazio).
+- [x] Drift check implementado com reaplicação de migrações na mesma instância.
+- [x] Suite SQL de testes executada automaticamente via `scripts/db/run_tests.sh`.
+- [x] Ordem determinística de migrações formalizada em `scripts/db/run_migrations.sh`.

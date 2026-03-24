@@ -17,8 +17,8 @@ export const fdaService = {
     let query = supabase
       .from('obj_fda')
       .select('*', { count: 'exact' })
-      .range(from, to)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .range(from, to);
 
     if (organizationId) query = query.eq('organization_id', organizationId);
     if (status) query = query.eq('status_atual', status);

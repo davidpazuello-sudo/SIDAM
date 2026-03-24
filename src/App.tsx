@@ -346,7 +346,7 @@ function AppContent() {
         </header>
 
         {/* Content Area */}
-        <section className={`flex-1 overflow-y-auto ${activeTab === 'config' || activeTab === 'chat' ? '' : 'p-8'} bg-slate-50/50 dark:bg-slate-950/50 transition-colors duration-300`}>
+        <section className={`stable-scrollbar flex-1 overflow-y-auto ${activeTab === 'config' || activeTab === 'chat' ? '' : 'p-8'} bg-slate-50/50 dark:bg-slate-950/50 transition-colors duration-300`}>
           <div className={`${activeTab === 'config' || activeTab === 'chat' ? 'h-full' : 'max-w-7xl mx-auto space-y-8'}`}>
             {activeTab === 'dashboard' && (
               <Dashboard welcomeMessage={branding.welcome_message} />

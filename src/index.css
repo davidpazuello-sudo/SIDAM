@@ -9,11 +9,6 @@
 }
 
 @layer base {
-  html {
-    overflow-y: scroll; /* mantém espaço da barra, evitando layout shift */
-    scrollbar-gutter: stable;
-  }
-
   html.dark {
     background-color: var(--color-dark-bg);
     color: var(--color-dark-text);
@@ -56,10 +51,13 @@
   * {
     scrollbar-width: thin; /* largura constante para não deslocar layout */
     scrollbar-color: transparent transparent;
-    scrollbar-gutter: stable;
   }
 
   *:hover {
     scrollbar-color: rgba(203, 213, 225, 0.4) transparent;
+  }
+
+  .stable-scrollbar {
+    scrollbar-gutter: stable;
   }
 }

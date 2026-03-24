@@ -95,18 +95,6 @@ export const ConfigEngine: React.FC<ConfigEngineProps> = ({ initialType, initial
             </div>
           </div>
 
-          <div className="bg-indigo-900 rounded-xl p-6 text-white shadow-xl">
-            <h4 className="font-bold mb-2 flex items-center gap-2">
-              <Settings className="w-4 h-4 text-indigo-400" />
-              Engine Status
-            </h4>
-            <p className="text-xs text-indigo-200 leading-relaxed mb-4">
-              O motor MetaGov está operando em modo <strong>Hot-Reload</strong>. Alterações nos metadados abaixo refletirão instantaneamente em todas as telas que consomem o slug <code>{initialType.slug}</code>.
-            </p>
-            <div className="h-1 bg-indigo-800 rounded-full overflow-hidden">
-              <div className="h-full bg-indigo-400 w-full animate-pulse"></div>
-            </div>
-          </div>
         </div>
 
         {/* Main: Properties Management */}

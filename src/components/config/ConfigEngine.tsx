@@ -7,7 +7,6 @@ import {
   Save, 
   Edit3, 
   ChevronRight, 
-  Code, 
   Layout,
   Link as LinkIcon,
   ShieldCheck,
@@ -198,20 +197,6 @@ export const ConfigEngine: React.FC<ConfigEngineProps> = ({ initialType, initial
                     ))}
                   </datalist>
                   <p className="text-[10px] text-slate-400">Campo com busca: digite para filtrar e selecionar.</p>
-                </div>
-              </div>
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Slug (ID do Sistema)</label>
-                <div className="flex items-center gap-2 px-3 py-2 bg-slate-100 border border-slate-200 rounded text-xs font-mono text-slate-500">
-                  <Code size={14} />
-                  {initialType.slug}
-                </div>
-              </div>
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Tabela Física (PostgreSQL)</label>
-                <div className="flex items-center gap-2 px-3 py-2 bg-slate-100 border border-slate-200 rounded text-xs font-mono text-slate-500">
-                  <Layout size={14} />
-                  {initialType.table_name}
                 </div>
               </div>
             </div>

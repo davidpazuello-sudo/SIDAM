@@ -206,3 +206,10 @@ O projeto já possui base arquitetural sólida para **criação do banco** e in�
 - [x] Drift check implementado com reaplicação de migrações na mesma instância.
 - [x] Suite SQL de testes executada automaticamente via `scripts/db/run_tests.sh`.
 - [x] Ordem determinística de migrações formalizada em `scripts/db/run_migrations.sh`.
+
+### Sprint 5 — Concluída (2026-03-24)
+- [x] Views operacionais de backlog, locks, saúde de integrações e crescimento de tabelas.
+- [x] Alertas consolidados em `monitor_alertas_operacionais`.
+- [x] Rotina de housekeeping com retenção (`fn_run_housekeeping`) e log de execução (`sys_housekeeping_runs`).
+- [x] Casos de teste SQL para observabilidade/operação (`supabase/tests/03_observability_and_housekeeping.sql`).
+- [x] Playbooks de incidente documentados em `docs/db_incident_playbooks.md`.

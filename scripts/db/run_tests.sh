@@ -6,6 +6,7 @@ DB_URL="${DATABASE_URL:?DATABASE_URL is required}"
 TESTS=(
   "supabase/tests/01_rls_access_matrix.sql"
   "supabase/tests/02_data_integrity_and_audit.sql"
+  "supabase/tests/03_observability_and_housekeeping.sql"
 )
 
 echo "==> Running SQL test suite"

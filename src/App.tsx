@@ -134,6 +134,44 @@ const MOCK_FDA_DATA: FDA[] = [
     created_at: '', 
     updated_at: '' 
   },
+  { 
+    id: '5', 
+    organization_id: 'org2', 
+    numero_inscricao: '2024.0108-C', 
+    numero_processo_administrativo: 'SEMSA-2024-021',
+    documento_devedor: '222.333.444-55', 
+    devedor_nome: 'Clínica Vida Plena', 
+    valor_principal_inscrito: 8750.40, 
+    natureza_debito: 'Taxa Sanitária',
+    ano_exercicio: 2024,
+    status_atual: 'ATIVA', 
+    rating_recuperabilidade: 'B', 
+    gigo_score: 92,
+    is_blockchain_sealed: true,
+    has_attachment: true,
+    is_segredo_justica: false, 
+    created_at: '', 
+    updated_at: '' 
+  },
+  { 
+    id: '6', 
+    organization_id: 'org3', 
+    numero_inscricao: '2023.2210-D', 
+    numero_processo_administrativo: 'SEMMAS-2023-778',
+    documento_devedor: '12.345.678/0001-10', 
+    devedor_nome: 'Construtora Rio Norte', 
+    valor_principal_inscrito: 193400.00, 
+    natureza_debito: 'Infração de Licenciamento',
+    ano_exercicio: 2023,
+    status_atual: 'ATIVA', 
+    rating_recuperabilidade: 'C', 
+    gigo_score: 80,
+    is_blockchain_sealed: false,
+    has_attachment: true,
+    is_segredo_justica: false, 
+    created_at: '', 
+    updated_at: '' 
+  },
 ];
 
 export default function App() {
@@ -145,6 +183,7 @@ export default function App() {
 }
 
 function AppContent() {
+  const secretariatOrganizationId = 'org1';
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -166,6 +205,11 @@ function AppContent() {
   const toggleTheme = () => {
     setIsDarkMode((prev) => !prev);
   };
+
+  const allDebts = MOCK_FDA_DATA;
+  const secretariatDebts = MOCK_FDA_DATA.filter(
+    (debt) => debt.organization_id === secretariatOrganizationId
+  );
 
   return (
     <div className="h-screen w-full bg-slate-50 dark:bg-slate-950 flex font-sans text-slate-900 dark:text-slate-100 transition-colors duration-300 overflow-hidden">
@@ -211,12 +255,13 @@ function AppContent() {
         <nav className="flex-1 px-4 py-4 space-y-2 overflow-x-hidden overflow-y-auto">
           <NavSection label="PGM" isCollapsed={isSidebarCollapsed} defaultExpanded={true}>
             <NavItem icon={<LayoutDashboard size={18} />} label="Dashboard" active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} isCollapsed={isSidebarCollapsed} />
+            <NavItem icon={<FileSearch size={18} />} label="Dívida Ativa (Geral)" active={activeTab === 'fda-pgm'} onClick={() => setActiveTab('fda-pgm')} isCollapsed={isSidebarCollapsed} />
             <NavItem icon={<Gavel size={18} />} label="Jurídico 4.0" active={false} isCollapsed={isSidebarCollapsed} />
           </NavSection>
 
           <NavSection label="Secretarias" isCollapsed={isSidebarCollapsed} defaultExpanded={true}>
             <NavItem icon={<LayoutDashboard size={18} />} label="Dashboard" active={activeTab === 'dashboard-secretariat'} onClick={() => setActiveTab('dashboard-secretariat')} isCollapsed={isSidebarCollapsed} />
-            <NavItem icon={<FileSearch size={18} />} label="Dívida Ativa" active={activeTab === 'fda'} onClick={() => setActiveTab('fda')} isCollapsed={isSidebarCollapsed} />
+            <NavItem icon={<FileSearch size={18} />} label="Dívida Ativa (Minha Secretaria)" active={activeTab === 'fda-secretariat'} onClick={() => setActiveTab('fda-secretariat')} isCollapsed={isSidebarCollapsed} />
             <NavItem icon={<MapIcon size={18} />} label="Inteligência Geo" active={activeTab === 'geo'} onClick={() => setActiveTab('geo')} isCollapsed={isSidebarCollapsed} />
           </NavSection>
 
@@ -311,12 +356,12 @@ function AppContent() {
               <Dashboard secretariat="Secretaria de Meio Ambiente" welcomeMessage={branding.welcome_message} />
             )}
 
-            {activeTab === 'fda' && (
+            {activeTab === 'fda-pgm' && (
               <>
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-2xl font-bold text-slate-800">Fichas Cadastrais (FDA)</h2>
-                    <p className="text-slate-500 text-sm">Gestão dinâmica de débitos inscritos.</p>
+                    <h2 className="text-2xl font-bold text-slate-800">Dívida Ativa Geral (PGM)</h2>
+                    <p className="text-slate-500 text-sm">Visão consolidada de todas as secretarias.</p>
                   </div>
                   <button className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all shadow-md shadow-indigo-500/20">
                     <Plus size={18} />
@@ -325,7 +370,27 @@ function AppContent() {
                 </div>
                 <MetaGovRenderer 
                   objectSlug="fda" 
-                  data={MOCK_FDA_DATA} 
+                  data={allDebts} 
+                  config={{ type: MOCK_CONFIG_TYPE, properties: MOCK_CONFIG_PROPS }} 
+                />
+              </>
+            )}
+
+            {activeTab === 'fda-secretariat' && (
+              <>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-2xl font-bold text-slate-800">Dívida Ativa da Secretaria</h2>
+                    <p className="text-slate-500 text-sm">Exibe apenas débitos da sua secretaria.</p>
+                  </div>
+                  <button className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all shadow-md shadow-indigo-500/20">
+                    <Plus size={18} />
+                    <span>Nova Inscrição</span>
+                  </button>
+                </div>
+                <MetaGovRenderer 
+                  objectSlug="fda" 
+                  data={secretariatDebts} 
                   config={{ type: MOCK_CONFIG_TYPE, properties: MOCK_CONFIG_PROPS }} 
                 />
               </>

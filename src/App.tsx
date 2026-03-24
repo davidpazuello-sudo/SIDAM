@@ -2,7 +2,7 @@
  * SIDAM - Sistema de Dívida Ativa Municipal
  * App Principal com MetaGov Engine
  */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Dashboard } from './components/dashboard/Dashboard';
 import { MetaGovRenderer } from './components/engine/MetaGovRenderer';
 import { AgentChat } from './components/ai/AgentChat';
@@ -147,12 +147,24 @@ export default function App() {
 function AppContent() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    if (typeof window === 'undefined') return false;
+
+    const savedTheme = window.localStorage.getItem('sidam-theme');
+    if (savedTheme === 'dark') return true;
+    if (savedTheme === 'light') return false;
+
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
   const { branding } = useBranding();
 
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', isDarkMode);
+    window.localStorage.setItem('sidam-theme', isDarkMode ? 'dark' : 'light');
+  }, [isDarkMode]);
+
   const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
-    document.documentElement.classList.toggle('dark');
+    setIsDarkMode((prev) => !prev);
   };
 
   return (
@@ -420,4 +432,3 @@ function NavItem({ icon, label, active, onClick, isCollapsed }: { icon: React.Re
     </button>
   );
 }
-

@@ -256,13 +256,13 @@ function AppContent() {
           <NavSection label="PGM" isCollapsed={isSidebarCollapsed} defaultExpanded={true}>
             <NavItem icon={<LayoutDashboard size={18} />} label="Dashboard" active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} isCollapsed={isSidebarCollapsed} />
             <NavItem icon={<FileSearch size={18} />} label="Dívida Ativa (Geral)" active={activeTab === 'fda-pgm'} onClick={() => setActiveTab('fda-pgm')} isCollapsed={isSidebarCollapsed} />
+            <NavItem icon={<MapIcon size={18} />} label="Inteligência Geo" active={activeTab === 'geo'} onClick={() => setActiveTab('geo')} isCollapsed={isSidebarCollapsed} />
             <NavItem icon={<Gavel size={18} />} label="Jurídico 4.0" active={false} isCollapsed={isSidebarCollapsed} />
           </NavSection>
 
           <NavSection label="Secretarias" isCollapsed={isSidebarCollapsed} defaultExpanded={true}>
             <NavItem icon={<LayoutDashboard size={18} />} label="Dashboard" active={activeTab === 'dashboard-secretariat'} onClick={() => setActiveTab('dashboard-secretariat')} isCollapsed={isSidebarCollapsed} />
             <NavItem icon={<FileSearch size={18} />} label="Dívida Ativa (Minha Secretaria)" active={activeTab === 'fda-secretariat'} onClick={() => setActiveTab('fda-secretariat')} isCollapsed={isSidebarCollapsed} />
-            <NavItem icon={<MapIcon size={18} />} label="Inteligência Geo" active={activeTab === 'geo'} onClick={() => setActiveTab('geo')} isCollapsed={isSidebarCollapsed} />
           </NavSection>
 
           <NavSection label="Cidadão" isCollapsed={isSidebarCollapsed} defaultExpanded={true}>

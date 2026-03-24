@@ -5,7 +5,6 @@ import {
   List, 
   Plus, 
   Save, 
-  Trash2, 
   Edit3, 
   ChevronRight, 
   Code, 
@@ -47,9 +46,6 @@ export const ConfigEngine: React.FC<ConfigEngineProps> = ({ initialType, initial
   const { branding, updateBranding } = useBranding();
   const [brandingForm, setBrandingForm] = useState(branding);
   const [isSavingBranding, setIsSavingBranding] = useState(false);
-
-  const dataTypes = ['string', 'number', 'decimal', 'boolean', 'date', 'json'];
-  const uiComponents = ['TextInput', 'MaskedInput', 'CurrencyInput', 'StatusBadge', 'RatingBadge', 'DatePicker', 'Checkbox'];
 
   const renderDynamicProperties = () => (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -123,105 +119,79 @@ export const ConfigEngine: React.FC<ConfigEngineProps> = ({ initialType, initial
               </div>
             </div>
             
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="bg-slate-50/50 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                    <th className="px-6 py-3">Ordem</th>
-                    <th className="px-6 py-3">Nome Exibição</th>
-                    <th className="px-6 py-3">Tipo Dado</th>
-                    <th className="px-6 py-3">Componente UI</th>
-                    <th className="px-6 py-3 text-right">Ações</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {properties.map((prop) => (
-                    <tr key={prop.id} className={`hover:bg-slate-50/50 transition-colors cursor-pointer ${selectedProp?.id === prop.id ? 'bg-indigo-50/50' : ''}`} onClick={() => setSelectedProp(prop)}>
-                      <td className="px-6 py-4 text-xs font-mono text-slate-400">#{prop.sort_order}</td>
-                      <td className="px-6 py-4">
-                        <div className="flex flex-col">
-                          <span className="text-sm font-bold text-slate-700">{prop.name}</span>
-                          <span className="text-[10px] font-mono text-slate-400">{prop.slug}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200 font-mono">
-                          {prop.data_type}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded border border-indigo-100 font-bold">
-                          {prop.ui_component}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <button className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-white rounded transition-all">
-                            <Edit3 size={14} />
-                          </button>
-                          <button className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-white rounded transition-all">
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="p-4 space-y-3">
+              {properties.map((prop) => (
+                <button
+                  key={prop.id}
+                  onClick={() => setSelectedProp(prop)}
+                  className={`w-full text-left p-4 rounded-xl border transition-all ${
+                    selectedProp?.id === prop.id
+                      ? 'border-indigo-300 bg-indigo-50/60'
+                      : 'border-slate-200 bg-white hover:border-indigo-200 hover:bg-slate-50'
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-start gap-4">
+                      <span className="text-xs font-mono text-slate-400 mt-1">#{prop.sort_order}</span>
+                      <div>
+                        <p className="text-sm font-bold text-slate-800">{prop.name}</p>
+                        <p className="text-[11px] font-mono text-slate-500">{prop.slug}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200 font-mono">
+                        {prop.data_type}
+                      </span>
+                      <span className="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded border border-indigo-100 font-bold">
+                        {prop.ui_component}
+                      </span>
+                      <ChevronRight className="w-4 h-4 text-slate-400" />
+                    </div>
+                  </div>
+                </button>
+              ))}
             </div>
           </div>
-
-          {/* Editor Panel (Conditional) */}
-          {selectedProp && (
-            <div className="bg-white rounded-xl border-2 border-indigo-500 shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
-              <div className="px-6 py-4 bg-indigo-500 text-white flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Edit3 className="w-4 h-4" />
-                  <h3 className="font-bold text-sm uppercase tracking-wider">Editando: {selectedProp.name}</h3>
-                </div>
-                <button onClick={() => setSelectedProp(null)} className="text-white/80 hover:text-white">
-                  <ChevronRight className="w-5 h-5 rotate-90" />
-                </button>
-              </div>
-              <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nome de Exibição (Label)</label>
-                    <input type="text" defaultValue={selectedProp.name} className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Tipo de Dado</label>
-                    <select className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
-                      {dataTypes.map(t => <option key={t} value={t} selected={t === selectedProp.data_type}>{t}</option>)}
-                    </select>
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Componente de UI</label>
-                    <select className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
-                      {uiComponents.map(c => <option key={c} value={c} selected={c === selectedProp.ui_component}>{c}</option>)}
-                    </select>
-                  </div>
-                  <div className="flex items-center gap-4 pt-6">
-                    <label className="flex items-center gap-2 cursor-pointer group">
-                      <input type="checkbox" defaultChecked={selectedProp.is_required} className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" />
-                      <span className="text-xs font-bold text-slate-600 group-hover:text-indigo-600 transition-colors">Campo Obrigatório</span>
-                    </label>
-                  </div>
-                </div>
-                <div className="md:col-span-2 flex justify-end gap-3 pt-4 border-t border-slate-100">
-                  <button onClick={() => setSelectedProp(null)} className="px-6 py-2 text-sm font-bold text-slate-500 hover:text-slate-700 transition-all">Cancelar</button>
-                  <button className="flex items-center gap-2 bg-indigo-600 text-white px-8 py-2 rounded-lg font-bold text-sm shadow-lg shadow-indigo-500/20 hover:bg-indigo-700 transition-all">
-                    <Save size={18} />
-                    Salvar Metadados
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
+
+      {/* Popup de Detalhes da Propriedade */}
+      {selectedProp && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center p-4">
+          <div className="w-full max-w-3xl bg-white rounded-2xl border border-slate-200 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="px-6 py-4 bg-indigo-600 text-white flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Edit3 className="w-4 h-4" />
+                <h3 className="font-bold text-sm uppercase tracking-wider">Detalhes do Objeto</h3>
+              </div>
+              <button onClick={() => setSelectedProp(null)} className="text-white/80 hover:text-white">
+                <ChevronRight className="w-5 h-5 rotate-90" />
+              </button>
+            </div>
+
+            <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+              <DetailField label="ID" value={selectedProp.id} mono />
+              <DetailField label="Ordem" value={`#${selectedProp.sort_order}`} mono />
+              <DetailField label="Nome de Exibição" value={selectedProp.name} />
+              <DetailField label="Slug" value={selectedProp.slug} mono />
+              <DetailField label="Tipo de Dado" value={selectedProp.data_type} mono />
+              <DetailField label="Componente UI" value={selectedProp.ui_component} />
+              <DetailField label="Objeto (slug)" value={selectedProp.object_type_slug} mono />
+              <DetailField label="Campo Obrigatório" value={selectedProp.is_required ? 'Sim' : 'Não'} />
+            </div>
+
+            <div className="px-6 py-4 border-t border-slate-100 flex justify-end gap-3">
+              <button onClick={() => setSelectedProp(null)} className="px-4 py-2 text-sm font-bold text-slate-500 hover:text-slate-700 transition-all">
+                Fechar
+              </button>
+              <button className="flex items-center gap-2 bg-indigo-600 text-white px-5 py-2 rounded-lg font-bold text-sm shadow-lg shadow-indigo-500/20 hover:bg-indigo-700 transition-all">
+                <Save size={16} />
+                Editar Metadados
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 
@@ -719,6 +689,17 @@ function SubNavItem({ icon, label, active, onClick }: { icon: React.ReactNode, l
       <span>{label}</span>
       {active && <ChevronRight size={14} className="ml-auto text-indigo-400" />}
     </button>
+  );
+}
+
+function DetailField({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
+  return (
+    <div>
+      <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">{label}</label>
+      <div className={`w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded text-sm text-slate-700 ${mono ? 'font-mono' : 'font-medium'}`}>
+        {value}
+      </div>
+    </div>
   );
 }
 

@@ -16,6 +16,7 @@ MIGRATIONS=(
   "supabase/migrations/10_security_rls_expansion.sql"
   "supabase/migrations/11_sprint3_data_integrity.sql"
   "supabase/migrations/12_sprint5_observability_ops.sql"
+  "supabase/migrations/13_sprint6_governance_scale.sql"
 )
 
 echo "==> Applying migrations in deterministic order"

@@ -213,3 +213,10 @@ O projeto já possui base arquitetural sólida para **criação do banco** e in�
 - [x] Rotina de housekeeping com retenção (`fn_run_housekeeping`) e log de execução (`sys_housekeeping_runs`).
 - [x] Casos de teste SQL para observabilidade/operação (`supabase/tests/03_observability_and_housekeeping.sql`).
 - [x] Playbooks de incidente documentados em `docs/db_incident_playbooks.md`.
+
+### Sprint 6 — Concluída (2026-03-24)
+- [x] Governança de contrato de dados implementada (`sys_data_contracts`, `sys_data_contract_versions`).
+- [x] Evidência formal de backup/restore e metas RTO/RPO implementadas (`sys_backup_restore_evidence` + documentação).
+- [x] Checklist de release de banco implementado (`sys_db_release_checklists` + guia operacional).
+- [x] Visão de candidatos a particionamento criada (`monitor_partition_candidates`).
+- [x] Casos de teste SQL de governança adicionados (`supabase/tests/04_governance_release_backup.sql`).

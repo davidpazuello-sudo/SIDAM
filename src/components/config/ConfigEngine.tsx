@@ -43,7 +43,7 @@ export const ConfigEngine: React.FC<ConfigEngineProps> = ({ initialType, initial
   const [activeSubTab, setActiveSubTab] = useState<SubTab>('dynamic_properties');
   const [properties, setProperties] = useState<ObjectProperty[]>(initialProperties);
   const [selectedProp, setSelectedProp] = useState<ObjectProperty | null>(null);
-  const [selectedObjectName, setSelectedObjectName] = useState(initialType.name);
+  const [selectedObjectName, setSelectedObjectName] = useState('');
   const { branding, updateBranding } = useBranding();
   const [brandingForm, setBrandingForm] = useState(branding);
   const [isSavingBranding, setIsSavingBranding] = useState(false);
@@ -85,7 +85,7 @@ export const ConfigEngine: React.FC<ConfigEngineProps> = ({ initialType, initial
                     list="object-name-options"
                     value={selectedObjectName}
                     onChange={(e) => setSelectedObjectName(e.target.value)}
-                    placeholder="Buscar objeto..."
+                    placeholder={initialType.name}
                     className="w-full px-3 py-2 bg-white border border-slate-200 rounded text-sm font-medium text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none"
                   />
                   <datalist id="object-name-options">

@@ -41,7 +41,7 @@ type SubTab = 'dynamic_properties' | 'integrations' | 'permissions' | 'customiza
 export const ConfigEngine: React.FC<ConfigEngineProps> = ({ initialType, initialProperties }) => {
   const [activeSubTab, setActiveSubTab] = useState<SubTab>('dynamic_properties');
   const [selectedProp, setSelectedProp] = useState<ObjectProperty | null>(null);
-  const [selectedObjectGroup, setSelectedObjectGroup] = useState('');
+  const [selectedObjectGroup, setSelectedObjectGroup] = useState('Todos');
   const [selectedObjectName, setSelectedObjectName] = useState('');
   const { branding, updateBranding } = useBranding();
   const [brandingForm, setBrandingForm] = useState(branding);
@@ -167,7 +167,7 @@ export const ConfigEngine: React.FC<ConfigEngineProps> = ({ initialType, initial
   ];
   const availableObjectGroups = Array.from(new Set(objectCatalog.map((objectItem) => objectItem.group)));
   const normalizedSelectedGroup = selectedObjectGroup.trim().toLowerCase();
-  const isAllGroupsSelected = !normalizedSelectedGroup || normalizedSelectedGroup === 'todos';
+  const isAllGroupsSelected = normalizedSelectedGroup === 'todos';
   const availableObjectNames = objectCatalog
     .filter((objectItem) => isAllGroupsSelected || objectItem.group.toLowerCase() === normalizedSelectedGroup)
     .map((objectItem) => objectItem.name);
@@ -206,24 +206,22 @@ export const ConfigEngine: React.FC<ConfigEngineProps> = ({ initialType, initial
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Grupo de Objetos</label>
                 <div className="space-y-1">
-                  <input
-                  type="text"
-                  list="object-group-options"
+                  <select
                   value={selectedObjectGroup}
                   onChange={(e) => {
                     setSelectedObjectGroup(e.target.value);
                     setSelectedObjectName('');
                   }}
-                  placeholder="Todos"
                   className="w-full px-3 py-2 bg-white border border-slate-200 rounded text-sm font-medium text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none"
-                />
-                  <datalist id="object-group-options">
-                    <option value="Todos" />
-                  {availableObjectGroups.map((group) => (
-                    <option key={group} value={group} />
-                  ))}
-                  </datalist>
-                  <p className="text-[10px] text-slate-400">Padrão: Todos.</p>
+                >
+                    <option value="Todos">Todos</option>
+                    {availableObjectGroups.map((group) => (
+                      <option key={group} value={group}>
+                        {group}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-[10px] text-slate-400">Filtro de grupo aplicado antes da busca por nome.</p>
                 </div>
               </div>
               <div>

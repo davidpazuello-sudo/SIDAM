@@ -1,0 +1,7 @@
+{
+  "name": "SIDAM - Sistema de Dívida Ativa Municipal",
+  "description": "Plataforma inteligente de gestão fiscal e jurídica baseada no framework MetaGov, com IA Generativa, Blockchain Fiscal e Geoprocessamento.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}

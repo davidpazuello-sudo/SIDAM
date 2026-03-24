@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+@theme {
+  --color-dark-bg: #0f172a;
+  --color-dark-surface: #1e293b;
+  --color-dark-border: #334155;
+  --color-dark-text: #f8fafc;
+}
+
+@layer base {
+  html.dark {
+    background-color: var(--color-dark-bg);
+    color: var(--color-dark-text);
+  }
+  
+  /* Modern Scrollbar Styling - Auto-hide effect */
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+
+  /* Hide scrollbar buttons (arrows) */
+  ::-webkit-scrollbar-button {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  /* Thumb is transparent by default */
+  ::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 10px;
+    transition: background 0.3s ease;
+  }
+
+  /* Show thumb when the scrollable area is hovered */
+  *:hover::-webkit-scrollbar-thumb {
+    background: rgba(203, 213, 225, 0.4); /* slate-300 with opacity */
+  }
+
+  *:hover::-webkit-scrollbar-thumb:hover {
+    background: rgba(148, 163, 184, 0.8); /* slate-400 with opacity */
+  }
+
+  /* Firefox support */
+  * {
+    scrollbar-width: none; /* Hidden by default in Firefox */
+  }
+
+  *:hover {
+    scrollbar-width: thin; /* Show thin scrollbar on hover */
+    scrollbar-color: rgba(203, 213, 225, 0.4) transparent;
+  }
+}

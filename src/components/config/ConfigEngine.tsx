@@ -43,9 +43,17 @@ export const ConfigEngine: React.FC<ConfigEngineProps> = ({ initialType, initial
   const [activeSubTab, setActiveSubTab] = useState<SubTab>('dynamic_properties');
   const [properties, setProperties] = useState<ObjectProperty[]>(initialProperties);
   const [selectedProp, setSelectedProp] = useState<ObjectProperty | null>(null);
+  const [selectedObjectName, setSelectedObjectName] = useState(initialType.name);
   const { branding, updateBranding } = useBranding();
   const [brandingForm, setBrandingForm] = useState(branding);
   const [isSavingBranding, setIsSavingBranding] = useState(false);
+  const availableObjectNames = [
+    initialType.name,
+    'Certidão de Dívida Ativa',
+    'Pagamento da Dívida Ativa',
+    'CADIM Municipal',
+    'Fila de Integrações'
+  ];
 
   const renderDynamicProperties = () => (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -71,12 +79,22 @@ export const ConfigEngine: React.FC<ConfigEngineProps> = ({ initialType, initial
             <div className="p-6 space-y-4">
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nome do Objeto</label>
-                <input 
-                  type="text" 
-                  value={initialType.name} 
-                  readOnly
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded text-sm font-medium text-slate-700"
-                />
+                <div className="space-y-1">
+                  <input
+                    type="text"
+                    list="object-name-options"
+                    value={selectedObjectName}
+                    onChange={(e) => setSelectedObjectName(e.target.value)}
+                    placeholder="Buscar objeto..."
+                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded text-sm font-medium text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none"
+                  />
+                  <datalist id="object-name-options">
+                    {availableObjectNames.map((objectName) => (
+                      <option key={objectName} value={objectName} />
+                    ))}
+                  </datalist>
+                  <p className="text-[10px] text-slate-400">Campo com busca: digite para filtrar e selecionar.</p>
+                </div>
               </div>
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Slug (ID do Sistema)</label>

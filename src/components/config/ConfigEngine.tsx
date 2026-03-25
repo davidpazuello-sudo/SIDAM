@@ -25,7 +25,8 @@ import {
   BarChart3,
   ShieldAlert,
   Image as ImageIcon,
-  Type
+  Type,
+  GitBranch
 } from 'lucide-react';
 import { ObjectType, ObjectProperty } from '../../types';
 import { MatrizAcesso } from '../metagov/MatrizAcesso';
@@ -36,7 +37,7 @@ interface ConfigEngineProps {
   initialProperties: ObjectProperty[];
 }
 
-type SubTab = 'dynamic_properties' | 'integrations' | 'permissions' | 'customization' | 'security';
+type SubTab = 'dynamic_properties' | 'integrations' | 'permissions' | 'customization' | 'security' | 'system_flow';
 
 export const ConfigEngine: React.FC<ConfigEngineProps> = ({ initialType, initialProperties }) => {
   const [activeSubTab, setActiveSubTab] = useState<SubTab>('dynamic_properties');
@@ -749,6 +750,77 @@ export const ConfigEngine: React.FC<ConfigEngineProps> = ({ initialType, initial
     </div>
   );
 
+  const renderSystemFlow = () => {
+    const flowSteps = [
+      {
+        title: '1. Cadastro da Secretaria/Órgão',
+        description: 'Criação da secretaria em sec_organization e definição de escopo organizacional.',
+      },
+      {
+        title: '2. Vinculação de Usuários e Perfis',
+        description: 'Associação de usuários à secretaria e configuração de permissões por cargo.',
+      },
+      {
+        title: '3. Configuração do Objeto (MetaGov)',
+        description: 'Definição de propriedades dinâmicas, validações e regras de workflow para o objeto.',
+      },
+      {
+        title: '4. Entrada/Importação de Dados',
+        description: 'Cadastro de fichas de dívida ativa (obj_fda) e ingestão de dados por integrações.',
+      },
+      {
+        title: '5. Emissão e Gestão de CDA',
+        description: 'Geração de certidões (obj_cda), análise de status e preparação para cobrança.',
+      },
+      {
+        title: '6. Cobrança, Pagamentos e PIX',
+        description: 'Acompanhamento de pagamentos, conciliação financeira e eventos de arrecadação.',
+      },
+      {
+        title: '7. Jurídico e Negociação',
+        description: 'Encaminhamento para fluxo jurídico, parcelamentos, eventos de negociação e CADIM.',
+      },
+      {
+        title: '8. Auditoria, Observabilidade e Governança',
+        description: 'Rastreabilidade por logs/auditoria, alertas, housekeeping e evidências de governança.',
+      },
+    ];
+
+    return (
+      <div className="space-y-8 animate-in fade-in duration-500">
+        <div>
+          <h2 className="text-2xl font-bold text-slate-800">Fluxo de Funcionamento do Sistema</h2>
+          <p className="text-slate-500 text-sm">
+            Visão ponta a ponta do SIDAM: do cadastro das secretarias até operação, cobrança e governança.
+          </p>
+        </div>
+
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="px-6 py-4 bg-slate-50 border-b border-slate-100 flex items-center gap-2">
+            <GitBranch className="w-4 h-4 text-indigo-600" />
+            <h3 className="font-bold text-slate-800 text-sm uppercase tracking-wider">Etapas do Fluxo</h3>
+          </div>
+          <div className="p-6 space-y-4">
+            {flowSteps.map((step, index) => (
+              <div key={step.title} className="flex gap-4">
+                <div className="flex flex-col items-center">
+                  <div className="w-7 h-7 rounded-full bg-indigo-600 text-white text-xs font-bold flex items-center justify-center">
+                    {index + 1}
+                  </div>
+                  {index < flowSteps.length - 1 && <div className="w-px h-full bg-slate-200 mt-2" />}
+                </div>
+                <div className="pb-4">
+                  <h4 className="font-bold text-slate-800 text-sm">{step.title}</h4>
+                  <p className="text-xs text-slate-500 mt-1">{step.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="flex h-full bg-slate-50/50 overflow-hidden">
       {/* Sub-Sidebar */}
@@ -792,6 +864,12 @@ export const ConfigEngine: React.FC<ConfigEngineProps> = ({ initialType, initial
             active={activeSubTab === 'security'} 
             onClick={() => setActiveSubTab('security')} 
           />
+          <SubNavItem
+            icon={<GitBranch size={18} />}
+            label="Fluxo de Funcionamento"
+            active={activeSubTab === 'system_flow'}
+            onClick={() => setActiveSubTab('system_flow')}
+          />
         </nav>
 
         <div className="p-4 border-t border-slate-100">
@@ -815,6 +893,7 @@ export const ConfigEngine: React.FC<ConfigEngineProps> = ({ initialType, initial
           {activeSubTab === 'permissions' && renderPermissions()}
           {activeSubTab === 'customization' && renderCustomization()}
           {activeSubTab === 'security' && renderSecurity()}
+          {activeSubTab === 'system_flow' && renderSystemFlow()}
         </div>
       </main>
     </div>

@@ -35,7 +35,9 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Aplicar Blockchain na FDA e CDA
+DROP TRIGGER IF EXISTS trg_blockchain_fda ON public.obj_fda;
 CREATE TRIGGER trg_blockchain_fda AFTER INSERT OR UPDATE ON public.obj_fda FOR EACH ROW EXECUTE FUNCTION public.fn_generate_blockchain_block();
+DROP TRIGGER IF EXISTS trg_blockchain_cda ON public.obj_cda;
 CREATE TRIGGER trg_blockchain_cda AFTER INSERT OR UPDATE ON public.obj_cda FOR EACH ROW EXECUTE FUNCTION public.fn_generate_blockchain_block();
 
 -- 2. Motor de Pagamento Seguro (Outbox Pattern)
@@ -63,6 +65,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trg_baixa_pagamento_safe ON public.obj_pagamento_da;
 CREATE TRIGGER trg_baixa_pagamento_safe
 AFTER INSERT ON public.obj_pagamento_da
 FOR EACH ROW EXECUTE FUNCTION public.fn_trigger_pagamento_safe();
@@ -108,6 +111,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trg_calcula_rating_fda ON public.obj_fda;
 CREATE TRIGGER trg_calcula_rating_fda
 BEFORE INSERT ON public.obj_fda
 FOR EACH ROW EXECUTE FUNCTION public.fn_compute_debt_rating();

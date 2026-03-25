@@ -2,7 +2,7 @@
  * SIDAM - Sistema de Dívida Ativa Municipal
  * App Principal com MetaGov Engine
  */
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Dashboard } from './components/dashboard/Dashboard';
 import { MetaGovRenderer } from './components/engine/MetaGovRenderer';
 import { AgentChat } from './components/ai/AgentChat';
@@ -12,6 +12,7 @@ import { ConfigEngine } from './components/config/ConfigEngine';
 import { SecretariatManager } from './components/config/SecretariatManager';
 import { UserProfile } from './components/profile/UserProfile';
 import { BrandingProvider, useBranding } from './context/BrandingContext';
+import { useAuth } from './context/AuthContext';
 import { ObjectType, ObjectProperty, FDA } from './types';
 import { 
   LayoutDashboard, 
@@ -134,6 +135,44 @@ const MOCK_FDA_DATA: FDA[] = [
     created_at: '', 
     updated_at: '' 
   },
+  { 
+    id: '5', 
+    organization_id: 'org2', 
+    numero_inscricao: '2024.0108-C', 
+    numero_processo_administrativo: 'SEMSA-2024-021',
+    documento_devedor: '222.333.444-55', 
+    devedor_nome: 'Clínica Vida Plena', 
+    valor_principal_inscrito: 8750.40, 
+    natureza_debito: 'Taxa Sanitária',
+    ano_exercicio: 2024,
+    status_atual: 'ATIVA', 
+    rating_recuperabilidade: 'B', 
+    gigo_score: 92,
+    is_blockchain_sealed: true,
+    has_attachment: true,
+    is_segredo_justica: false, 
+    created_at: '', 
+    updated_at: '' 
+  },
+  { 
+    id: '6', 
+    organization_id: 'org3', 
+    numero_inscricao: '2023.2210-D', 
+    numero_processo_administrativo: 'SEMMAS-2023-778',
+    documento_devedor: '12.345.678/0001-10', 
+    devedor_nome: 'Construtora Rio Norte', 
+    valor_principal_inscrito: 193400.00, 
+    natureza_debito: 'Infração de Licenciamento',
+    ano_exercicio: 2023,
+    status_atual: 'ATIVA', 
+    rating_recuperabilidade: 'C', 
+    gigo_score: 80,
+    is_blockchain_sealed: false,
+    has_attachment: true,
+    is_segredo_justica: false, 
+    created_at: '', 
+    updated_at: '' 
+  },
 ];
 
 export default function App() {
@@ -145,15 +184,48 @@ export default function App() {
 }
 
 function AppContent() {
+  const { signOut, user } = useAuth();
+  const secretariatOrganizationId = 'org1';
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const notificationsRef = useRef<HTMLDivElement | null>(null);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    if (typeof window === 'undefined') return false;
+
+    const savedTheme = window.localStorage.getItem('sidam-theme');
+    if (savedTheme === 'dark') return true;
+    if (savedTheme === 'light') return false;
+
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
   const { branding } = useBranding();
 
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', isDarkMode);
+    window.localStorage.setItem('sidam-theme', isDarkMode ? 'dark' : 'light');
+  }, [isDarkMode]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!notificationsRef.current) return;
+      if (!notificationsRef.current.contains(event.target as Node)) {
+        setIsNotificationsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
-    document.documentElement.classList.toggle('dark');
+    setIsDarkMode((prev) => !prev);
   };
+
+  const allDebts = MOCK_FDA_DATA;
+  const secretariatDebts = MOCK_FDA_DATA.filter(
+    (debt) => debt.organization_id === secretariatOrganizationId
+  );
 
   return (
     <div className="h-screen w-full bg-slate-50 dark:bg-slate-950 flex font-sans text-slate-900 dark:text-slate-100 transition-colors duration-300 overflow-hidden">
@@ -199,13 +271,14 @@ function AppContent() {
         <nav className="flex-1 px-4 py-4 space-y-2 overflow-x-hidden overflow-y-auto">
           <NavSection label="PGM" isCollapsed={isSidebarCollapsed} defaultExpanded={true}>
             <NavItem icon={<LayoutDashboard size={18} />} label="Dashboard" active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} isCollapsed={isSidebarCollapsed} />
+            <NavItem icon={<FileSearch size={18} />} label="Dívida Ativa (Geral)" active={activeTab === 'fda-pgm'} onClick={() => setActiveTab('fda-pgm')} isCollapsed={isSidebarCollapsed} />
+            <NavItem icon={<MapIcon size={18} />} label="Inteligência Geo" active={activeTab === 'geo'} onClick={() => setActiveTab('geo')} isCollapsed={isSidebarCollapsed} />
             <NavItem icon={<Gavel size={18} />} label="Jurídico 4.0" active={false} isCollapsed={isSidebarCollapsed} />
           </NavSection>
 
           <NavSection label="Secretarias" isCollapsed={isSidebarCollapsed} defaultExpanded={true}>
             <NavItem icon={<LayoutDashboard size={18} />} label="Dashboard" active={activeTab === 'dashboard-secretariat'} onClick={() => setActiveTab('dashboard-secretariat')} isCollapsed={isSidebarCollapsed} />
-            <NavItem icon={<FileSearch size={18} />} label="Dívida Ativa" active={activeTab === 'fda'} onClick={() => setActiveTab('fda')} isCollapsed={isSidebarCollapsed} />
-            <NavItem icon={<MapIcon size={18} />} label="Inteligência Geo" active={activeTab === 'geo'} onClick={() => setActiveTab('geo')} isCollapsed={isSidebarCollapsed} />
+            <NavItem icon={<FileSearch size={18} />} label="Dívida Ativa (Minha Secretaria)" active={activeTab === 'fda-secretariat'} onClick={() => setActiveTab('fda-secretariat')} isCollapsed={isSidebarCollapsed} />
           </NavSection>
 
           <NavSection label="Cidadão" isCollapsed={isSidebarCollapsed} defaultExpanded={true}>
@@ -226,12 +299,15 @@ function AppContent() {
             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 transition-all ${activeTab === 'profile' ? 'bg-indigo-600 ring-2 ring-indigo-400 ring-offset-2 ring-offset-slate-900' : 'bg-slate-700 group-hover:bg-slate-600'}`}>DP</div>
             {!isSidebarCollapsed && (
               <div className="flex-1 overflow-hidden">
-                <p className={`text-sm font-medium truncate transition-colors ${activeTab === 'profile' ? 'text-white' : 'text-slate-300'}`}>David Pazuello</p>
-                <p className="text-xs text-slate-500 truncate">Super-Admin</p>
+                <p className={`text-sm font-medium truncate transition-colors ${activeTab === 'profile' ? 'text-white' : 'text-slate-300'}`}>
+                  {user?.email ?? 'Usuário autenticado'}
+                </p>
+                <p className="text-xs text-slate-500 truncate">Sessão Supabase</p>
               </div>
             )}
           </div>
           <button 
+            onClick={signOut}
             className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center' : 'gap-3 px-3'} py-2 rounded-lg text-sm font-medium text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-all`}
             title={isSidebarCollapsed ? "Sair da Sessão" : undefined}
           >
@@ -273,10 +349,54 @@ function AppContent() {
               <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-indigo-400 rounded-full border-2 border-white"></div>
             </button>
 
-            <button className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors relative">
-              <Bell size={20} />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white dark:border-slate-900"></span>
-            </button>
+            <div className="relative" ref={notificationsRef}>
+              <button
+                onClick={() => setIsNotificationsOpen((prev) => !prev)}
+                className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors relative"
+              >
+                <Bell size={20} />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white dark:border-slate-900"></span>
+              </button>
+
+              {isNotificationsOpen && (
+                <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 overflow-hidden">
+                  <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                    <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100">Notificações</h4>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100 font-bold">
+                      3 NOVAS
+                    </span>
+                  </div>
+                  <div className="max-h-80 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
+                    {[
+                      {
+                        title: 'Novo pagamento conciliado',
+                        description: 'FDA 2024.0108-C conciliada com sucesso via PIX.',
+                        time: 'agora',
+                      },
+                      {
+                        title: 'Lote jurídico pronto para envio',
+                        description: '12 CDAs elegíveis para ajuizamento no lote do dia.',
+                        time: 'há 8 min',
+                      },
+                      {
+                        title: 'Alerta de integração',
+                        description: 'Integração CADIM retornou 2 pendências de validação.',
+                        time: 'há 21 min',
+                      },
+                    ].map((notification) => (
+                      <div key={notification.title} className="px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors">
+                        <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">{notification.title}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{notification.description}</p>
+                        <p className="text-[10px] text-slate-400 mt-2">{notification.time}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="px-4 py-2 border-t border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/30">
+                    <button className="text-xs font-bold text-indigo-600 hover:underline">Ver todas as notificações</button>
+                  </div>
+                </div>
+              )}
+            </div>
 
             <button 
               onClick={toggleTheme}
@@ -289,7 +409,7 @@ function AppContent() {
         </header>
 
         {/* Content Area */}
-        <section className={`flex-1 overflow-y-auto ${activeTab === 'config' || activeTab === 'chat' ? '' : 'p-8'} bg-slate-50/50 dark:bg-slate-950/50 transition-colors duration-300`}>
+        <section className={`stable-scrollbar flex-1 overflow-y-auto ${activeTab === 'config' || activeTab === 'chat' ? '' : 'p-8'} bg-slate-50/50 dark:bg-slate-950/50 transition-colors duration-300`}>
           <div className={`${activeTab === 'config' || activeTab === 'chat' ? 'h-full' : 'max-w-7xl mx-auto space-y-8'}`}>
             {activeTab === 'dashboard' && (
               <Dashboard welcomeMessage={branding.welcome_message} />
@@ -299,12 +419,12 @@ function AppContent() {
               <Dashboard secretariat="Secretaria de Meio Ambiente" welcomeMessage={branding.welcome_message} />
             )}
 
-            {activeTab === 'fda' && (
+            {activeTab === 'fda-pgm' && (
               <>
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-2xl font-bold text-slate-800">Fichas Cadastrais (FDA)</h2>
-                    <p className="text-slate-500 text-sm">Gestão dinâmica de débitos inscritos.</p>
+                    <h2 className="text-2xl font-bold text-slate-800">Dívida Ativa Geral (PGM)</h2>
+                    <p className="text-slate-500 text-sm">Visão consolidada de todas as secretarias.</p>
                   </div>
                   <button className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all shadow-md shadow-indigo-500/20">
                     <Plus size={18} />
@@ -313,7 +433,27 @@ function AppContent() {
                 </div>
                 <MetaGovRenderer 
                   objectSlug="fda" 
-                  data={MOCK_FDA_DATA} 
+                  data={allDebts} 
+                  config={{ type: MOCK_CONFIG_TYPE, properties: MOCK_CONFIG_PROPS }} 
+                />
+              </>
+            )}
+
+            {activeTab === 'fda-secretariat' && (
+              <>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-2xl font-bold text-slate-800">Dívida Ativa da Secretaria</h2>
+                    <p className="text-slate-500 text-sm">Exibe apenas débitos da sua secretaria.</p>
+                  </div>
+                  <button className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all shadow-md shadow-indigo-500/20">
+                    <Plus size={18} />
+                    <span>Nova Inscrição</span>
+                  </button>
+                </div>
+                <MetaGovRenderer 
+                  objectSlug="fda" 
+                  data={secretariatDebts} 
                   config={{ type: MOCK_CONFIG_TYPE, properties: MOCK_CONFIG_PROPS }} 
                 />
               </>
@@ -420,4 +560,3 @@ function NavItem({ icon, label, active, onClick, isCollapsed }: { icon: React.Re
     </button>
   );
 }
-

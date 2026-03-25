@@ -1,0 +1,29 @@
+name: CI — SQL Validation
+
+on:
+  push:
+    paths:
+      - 'supabase/migrations/**'
+      - 'supabase/tests/**'
+  pull_request:
+    paths:
+      - 'supabase/migrations/**'
+      - 'supabase/tests/**'
+
+jobs:
+  sql-lint:
+    name: SQL Syntax Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install sqlfluff
+        run: pip install sqlfluff
+
+      - name: Lint SQL migrations
+        run: |
+          sqlfluff lint supabase/migrations/ \
+            --dialect postgres \
+            --exclude-rules L016,L034

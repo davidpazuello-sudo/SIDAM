@@ -2,7 +2,7 @@
  * SIDAM - Sistema de Dívida Ativa Municipal
  * App Principal com MetaGov Engine
  */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Dashboard } from './components/dashboard/Dashboard';
 import { MetaGovRenderer } from './components/engine/MetaGovRenderer';
 import { AgentChat } from './components/ai/AgentChat';
@@ -188,6 +188,8 @@ function AppContent() {
   const secretariatOrganizationId = 'org1';
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const notificationsRef = useRef<HTMLDivElement | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(() => {
     if (typeof window === 'undefined') return false;
 
@@ -203,6 +205,18 @@ function AppContent() {
     document.documentElement.classList.toggle('dark', isDarkMode);
     window.localStorage.setItem('sidam-theme', isDarkMode ? 'dark' : 'light');
   }, [isDarkMode]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!notificationsRef.current) return;
+      if (!notificationsRef.current.contains(event.target as Node)) {
+        setIsNotificationsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const toggleTheme = () => {
     setIsDarkMode((prev) => !prev);
@@ -335,10 +349,54 @@ function AppContent() {
               <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-indigo-400 rounded-full border-2 border-white"></div>
             </button>
 
-            <button className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors relative">
-              <Bell size={20} />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white dark:border-slate-900"></span>
-            </button>
+            <div className="relative" ref={notificationsRef}>
+              <button
+                onClick={() => setIsNotificationsOpen((prev) => !prev)}
+                className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors relative"
+              >
+                <Bell size={20} />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white dark:border-slate-900"></span>
+              </button>
+
+              {isNotificationsOpen && (
+                <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 overflow-hidden">
+                  <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                    <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100">Notificações</h4>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100 font-bold">
+                      3 NOVAS
+                    </span>
+                  </div>
+                  <div className="max-h-80 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
+                    {[
+                      {
+                        title: 'Novo pagamento conciliado',
+                        description: 'FDA 2024.0108-C conciliada com sucesso via PIX.',
+                        time: 'agora',
+                      },
+                      {
+                        title: 'Lote jurídico pronto para envio',
+                        description: '12 CDAs elegíveis para ajuizamento no lote do dia.',
+                        time: 'há 8 min',
+                      },
+                      {
+                        title: 'Alerta de integração',
+                        description: 'Integração CADIM retornou 2 pendências de validação.',
+                        time: 'há 21 min',
+                      },
+                    ].map((notification) => (
+                      <div key={notification.title} className="px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors">
+                        <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">{notification.title}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{notification.description}</p>
+                        <p className="text-[10px] text-slate-400 mt-2">{notification.time}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="px-4 py-2 border-t border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/30">
+                    <button className="text-xs font-bold text-indigo-600 hover:underline">Ver todas as notificações</button>
+                  </div>
+                </div>
+              )}
+            </div>
 
             <button 
               onClick={toggleTheme}

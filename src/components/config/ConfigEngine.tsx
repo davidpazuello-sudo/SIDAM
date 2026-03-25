@@ -204,17 +204,17 @@ export const ConfigEngine: React.FC<ConfigEngineProps> = ({ initialType, initial
               <h3 className="font-bold text-slate-800 text-sm uppercase tracking-wider">Definição do Objeto</h3>
             </div>
             <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Grupo de Objetos</label>
+              <div className="rounded-lg border border-indigo-100 bg-indigo-50/40 p-3">
+                <label className="block text-[10px] font-bold text-indigo-500 uppercase mb-1">Grupo de Objetos</label>
                 <div className="space-y-1">
                   <select
-                  value={selectedObjectGroup}
-                  onChange={(e) => {
-                    setSelectedObjectGroup(e.target.value);
-                    setSelectedObjectName('');
-                  }}
-                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded text-sm font-medium text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none"
-                >
+                    value={selectedObjectGroup}
+                    onChange={(e) => {
+                      setSelectedObjectGroup(e.target.value);
+                      setSelectedObjectName('');
+                    }}
+                    className="w-full px-3 py-2 bg-white border border-indigo-200 rounded text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none"
+                  >
                     <option value="Todos">Todos</option>
                     {availableObjectGroups.map((group) => (
                       <option key={group} value={group}>
@@ -222,7 +222,7 @@ export const ConfigEngine: React.FC<ConfigEngineProps> = ({ initialType, initial
                       </option>
                     ))}
                   </select>
-                  <p className="text-[10px] text-slate-400">Filtro de grupo aplicado antes da busca por nome.</p>
+                  <p className="text-[10px] text-indigo-500/80">Selecione o grupo para filtrar os objetos por categoria.</p>
                 </div>
               </div>
               <div>

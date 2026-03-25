@@ -25,7 +25,8 @@ import {
   BarChart3,
   ShieldAlert,
   Image as ImageIcon,
-  Type
+  Type,
+  GitBranch
 } from 'lucide-react';
 import { ObjectType, ObjectProperty } from '../../types';
 import { MatrizAcesso } from '../metagov/MatrizAcesso';
@@ -36,25 +37,26 @@ interface ConfigEngineProps {
   initialProperties: ObjectProperty[];
 }
 
-type SubTab = 'dynamic_properties' | 'integrations' | 'permissions' | 'customization' | 'security';
+type SubTab = 'dynamic_properties' | 'integrations' | 'permissions' | 'customization' | 'security' | 'system_flow';
 
 export const ConfigEngine: React.FC<ConfigEngineProps> = ({ initialType, initialProperties }) => {
   const [activeSubTab, setActiveSubTab] = useState<SubTab>('dynamic_properties');
   const [selectedProp, setSelectedProp] = useState<ObjectProperty | null>(null);
+  const [selectedObjectGroup, setSelectedObjectGroup] = useState('Todos');
   const [selectedObjectName, setSelectedObjectName] = useState('');
   const { branding, updateBranding } = useBranding();
   const [brandingForm, setBrandingForm] = useState(branding);
   const [isSavingBranding, setIsSavingBranding] = useState(false);
-  const availableObjectNames = [
-    initialType.name,
-    'Certidão de Dívida Ativa',
-    'Pagamento da Dívida Ativa',
-    'CADIM Municipal',
-    'Fila de Integrações'
-  ];
-  const objectPropertyCatalog: Record<string, ObjectProperty[]> = {
-    [initialType.name]: initialProperties,
-    'Certidão de Dívida Ativa': [
+  const objectCatalog = [
+    {
+      name: initialType.name,
+      group: 'Núcleo da Dívida Ativa',
+      properties: initialProperties
+    },
+    {
+      name: 'Certidão de Dívida Ativa',
+      group: 'Núcleo da Dívida Ativa',
+      properties: [
       {
         id: 'cda-1',
         object_type_slug: 'cda',
@@ -77,8 +79,12 @@ export const ConfigEngine: React.FC<ConfigEngineProps> = ({ initialType, initial
         sort_order: 2,
         configuration: {}
       }
-    ],
-    'Pagamento da Dívida Ativa': [
+    ]
+    },
+    {
+      name: 'Pagamento da Dívida Ativa',
+      group: 'Núcleo da Dívida Ativa',
+      properties: [
       {
         id: 'pag-1',
         object_type_slug: 'pagamento_da',
@@ -101,8 +107,12 @@ export const ConfigEngine: React.FC<ConfigEngineProps> = ({ initialType, initial
         sort_order: 2,
         configuration: {}
       }
-    ],
-    'CADIM Municipal': [
+    ]
+    },
+    {
+      name: 'CADIM Municipal',
+      group: 'Núcleo da Dívida Ativa',
+      properties: [
       {
         id: 'cadim-1',
         object_type_slug: 'cadim',
@@ -125,8 +135,12 @@ export const ConfigEngine: React.FC<ConfigEngineProps> = ({ initialType, initial
         sort_order: 2,
         configuration: {}
       }
-    ],
-    'Fila de Integrações': [
+    ]
+    },
+    {
+      name: 'Fila de Integrações',
+      group: 'Integrações e Resiliência',
+      properties: [
       {
         id: 'fila-1',
         object_type_slug: 'integration_queue',
@@ -150,7 +164,17 @@ export const ConfigEngine: React.FC<ConfigEngineProps> = ({ initialType, initial
         configuration: {}
       }
     ]
-  };
+    }
+  ];
+  const availableObjectGroups = Array.from(new Set(objectCatalog.map((objectItem) => objectItem.group)));
+  const normalizedSelectedGroup = selectedObjectGroup.trim().toLowerCase();
+  const isAllGroupsSelected = normalizedSelectedGroup === 'todos';
+  const availableObjectNames = objectCatalog
+    .filter((objectItem) => isAllGroupsSelected || objectItem.group.toLowerCase() === normalizedSelectedGroup)
+    .map((objectItem) => objectItem.name);
+  const objectPropertyCatalog: Record<string, ObjectProperty[]> = Object.fromEntries(
+    objectCatalog.map((objectItem) => [objectItem.name, objectItem.properties])
+  );
   const activeObjectName = selectedObjectName || initialType.name;
   const displayedProperties = objectPropertyCatalog[activeObjectName] ?? [];
 
@@ -180,6 +204,27 @@ export const ConfigEngine: React.FC<ConfigEngineProps> = ({ initialType, initial
               <h3 className="font-bold text-slate-800 text-sm uppercase tracking-wider">Definição do Objeto</h3>
             </div>
             <div className="p-6 space-y-4">
+              <div className="rounded-lg border border-indigo-100 bg-indigo-50/40 p-3">
+                <label className="block text-[10px] font-bold text-indigo-500 uppercase mb-1">Grupo de Objetos</label>
+                <div className="space-y-1">
+                  <select
+                    value={selectedObjectGroup}
+                    onChange={(e) => {
+                      setSelectedObjectGroup(e.target.value);
+                      setSelectedObjectName('');
+                    }}
+                    className="w-full px-3 py-2 bg-white border border-indigo-200 rounded text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none"
+                  >
+                    <option value="Todos">Todos</option>
+                    {availableObjectGroups.map((group) => (
+                      <option key={group} value={group}>
+                        {group}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-[10px] text-indigo-500/80">Selecione o grupo para filtrar os objetos por categoria.</p>
+                </div>
+              </div>
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nome do Objeto</label>
                 <div className="space-y-1">
@@ -196,7 +241,9 @@ export const ConfigEngine: React.FC<ConfigEngineProps> = ({ initialType, initial
                       <option key={objectName} value={objectName} />
                     ))}
                   </datalist>
-                  <p className="text-[10px] text-slate-400">Campo com busca: digite para filtrar e selecionar.</p>
+                  <p className="text-[10px] text-slate-400">
+                    Campo com busca: selecione um grupo (opcional) e digite para filtrar.
+                  </p>
                 </div>
               </div>
             </div>
@@ -703,6 +750,77 @@ export const ConfigEngine: React.FC<ConfigEngineProps> = ({ initialType, initial
     </div>
   );
 
+  const renderSystemFlow = () => {
+    const flowSteps = [
+      {
+        title: '1. Cadastro da Secretaria/Órgão',
+        description: 'Criação da secretaria em sec_organization e definição de escopo organizacional.',
+      },
+      {
+        title: '2. Vinculação de Usuários e Perfis',
+        description: 'Associação de usuários à secretaria e configuração de permissões por cargo.',
+      },
+      {
+        title: '3. Configuração do Objeto (MetaGov)',
+        description: 'Definição de propriedades dinâmicas, validações e regras de workflow para o objeto.',
+      },
+      {
+        title: '4. Entrada/Importação de Dados',
+        description: 'Cadastro de fichas de dívida ativa (obj_fda) e ingestão de dados por integrações.',
+      },
+      {
+        title: '5. Emissão e Gestão de CDA',
+        description: 'Geração de certidões (obj_cda), análise de status e preparação para cobrança.',
+      },
+      {
+        title: '6. Cobrança, Pagamentos e PIX',
+        description: 'Acompanhamento de pagamentos, conciliação financeira e eventos de arrecadação.',
+      },
+      {
+        title: '7. Jurídico e Negociação',
+        description: 'Encaminhamento para fluxo jurídico, parcelamentos, eventos de negociação e CADIM.',
+      },
+      {
+        title: '8. Auditoria, Observabilidade e Governança',
+        description: 'Rastreabilidade por logs/auditoria, alertas, housekeeping e evidências de governança.',
+      },
+    ];
+
+    return (
+      <div className="space-y-8 animate-in fade-in duration-500">
+        <div>
+          <h2 className="text-2xl font-bold text-slate-800">Fluxo de Funcionamento do Sistema</h2>
+          <p className="text-slate-500 text-sm">
+            Visão ponta a ponta do SIDAM: do cadastro das secretarias até operação, cobrança e governança.
+          </p>
+        </div>
+
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="px-6 py-4 bg-slate-50 border-b border-slate-100 flex items-center gap-2">
+            <GitBranch className="w-4 h-4 text-indigo-600" />
+            <h3 className="font-bold text-slate-800 text-sm uppercase tracking-wider">Etapas do Fluxo</h3>
+          </div>
+          <div className="p-6 space-y-4">
+            {flowSteps.map((step, index) => (
+              <div key={step.title} className="flex gap-4">
+                <div className="flex flex-col items-center">
+                  <div className="w-7 h-7 rounded-full bg-indigo-600 text-white text-xs font-bold flex items-center justify-center">
+                    {index + 1}
+                  </div>
+                  {index < flowSteps.length - 1 && <div className="w-px h-full bg-slate-200 mt-2" />}
+                </div>
+                <div className="pb-4">
+                  <h4 className="font-bold text-slate-800 text-sm">{step.title}</h4>
+                  <p className="text-xs text-slate-500 mt-1">{step.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="flex h-full bg-slate-50/50 overflow-hidden">
       {/* Sub-Sidebar */}
@@ -746,6 +864,12 @@ export const ConfigEngine: React.FC<ConfigEngineProps> = ({ initialType, initial
             active={activeSubTab === 'security'} 
             onClick={() => setActiveSubTab('security')} 
           />
+          <SubNavItem
+            icon={<GitBranch size={18} />}
+            label="Fluxo de Funcionamento"
+            active={activeSubTab === 'system_flow'}
+            onClick={() => setActiveSubTab('system_flow')}
+          />
         </nav>
 
         <div className="p-4 border-t border-slate-100">
@@ -769,6 +893,7 @@ export const ConfigEngine: React.FC<ConfigEngineProps> = ({ initialType, initial
           {activeSubTab === 'permissions' && renderPermissions()}
           {activeSubTab === 'customization' && renderCustomization()}
           {activeSubTab === 'security' && renderSecurity()}
+          {activeSubTab === 'system_flow' && renderSystemFlow()}
         </div>
       </main>
     </div>

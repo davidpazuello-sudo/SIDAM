@@ -19,6 +19,15 @@ MIGRATIONS=(
   "supabase/migrations/13_sprint6_governance_scale.sql"
 )
 
+# CI bootstrap: create mock Supabase auth schema so RLS policies compile in plain PostgreSQL
+echo "==> Bootstrapping mock auth schema for CI"
+psql "$DB_URL" -v ON_ERROR_STOP=1 <<'SQL'
+CREATE SCHEMA IF NOT EXISTS auth;
+CREATE OR REPLACE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT '00000000-0000-0000-0000-000000000000'::uuid $$;
+CREATE OR REPLACE FUNCTION auth.jwt() RETURNS jsonb LANGUAGE sql STABLE AS $$ SELECT '{}'::jsonb $$;
+CREATE OR REPLACE FUNCTION auth.role() RETURNS text LANGUAGE sql STABLE AS $$ SELECT 'anon'::text $$;
+SQL
+
 echo "==> Applying migrations in deterministic order"
 for file in "${MIGRATIONS[@]}"; do
   echo "--> $file"

@@ -1,14 +1,12 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Settings, 
   Database, 
   List, 
   Plus, 
   Save, 
-  Trash2, 
   Edit3, 
   ChevronRight, 
-  Code, 
   Layout,
   Link as LinkIcon,
   ShieldCheck,
@@ -27,7 +25,8 @@ import {
   BarChart3,
   ShieldAlert,
   Image as ImageIcon,
-  Type
+  Type,
+  GitBranch
 } from 'lucide-react';
 import { ObjectType, ObjectProperty } from '../../types';
 import { MatrizAcesso } from '../metagov/MatrizAcesso';
@@ -38,18 +37,150 @@ interface ConfigEngineProps {
   initialProperties: ObjectProperty[];
 }
 
-type SubTab = 'dynamic_properties' | 'integrations' | 'permissions' | 'customization' | 'security';
+type SubTab = 'dynamic_properties' | 'integrations' | 'permissions' | 'customization' | 'security' | 'system_flow';
 
 export const ConfigEngine: React.FC<ConfigEngineProps> = ({ initialType, initialProperties }) => {
   const [activeSubTab, setActiveSubTab] = useState<SubTab>('dynamic_properties');
-  const [properties, setProperties] = useState<ObjectProperty[]>(initialProperties);
   const [selectedProp, setSelectedProp] = useState<ObjectProperty | null>(null);
+  const [selectedObjectGroup, setSelectedObjectGroup] = useState('Todos');
+  const [selectedObjectName, setSelectedObjectName] = useState('');
   const { branding, updateBranding } = useBranding();
   const [brandingForm, setBrandingForm] = useState(branding);
   const [isSavingBranding, setIsSavingBranding] = useState(false);
+  const objectCatalog = [
+    {
+      name: initialType.name,
+      group: 'Núcleo da Dívida Ativa',
+      properties: initialProperties
+    },
+    {
+      name: 'Certidão de Dívida Ativa',
+      group: 'Núcleo da Dívida Ativa',
+      properties: [
+      {
+        id: 'cda-1',
+        object_type_slug: 'cda',
+        name: 'Número CDA',
+        slug: 'numero_cda',
+        data_type: 'string',
+        ui_component: 'TextInput',
+        is_required: true,
+        sort_order: 1,
+        configuration: {}
+      },
+      {
+        id: 'cda-2',
+        object_type_slug: 'cda',
+        name: 'Status da Emissão',
+        slug: 'status_emissao',
+        data_type: 'string',
+        ui_component: 'StatusBadge',
+        is_required: true,
+        sort_order: 2,
+        configuration: {}
+      }
+    ]
+    },
+    {
+      name: 'Pagamento da Dívida Ativa',
+      group: 'Núcleo da Dívida Ativa',
+      properties: [
+      {
+        id: 'pag-1',
+        object_type_slug: 'pagamento_da',
+        name: 'Valor Pago',
+        slug: 'valor_pago',
+        data_type: 'decimal',
+        ui_component: 'CurrencyInput',
+        is_required: true,
+        sort_order: 1,
+        configuration: {}
+      },
+      {
+        id: 'pag-2',
+        object_type_slug: 'pagamento_da',
+        name: 'Meio de Pagamento',
+        slug: 'meio_pagamento',
+        data_type: 'string',
+        ui_component: 'TextInput',
+        is_required: true,
+        sort_order: 2,
+        configuration: {}
+      }
+    ]
+    },
+    {
+      name: 'CADIM Municipal',
+      group: 'Núcleo da Dívida Ativa',
+      properties: [
+      {
+        id: 'cadim-1',
+        object_type_slug: 'cadim',
+        name: 'Status Restrição',
+        slug: 'status_restricao',
+        data_type: 'string',
+        ui_component: 'StatusBadge',
+        is_required: true,
+        sort_order: 1,
+        configuration: {}
+      },
+      {
+        id: 'cadim-2',
+        object_type_slug: 'cadim',
+        name: 'Data de Inscrição',
+        slug: 'data_inscricao',
+        data_type: 'date',
+        ui_component: 'DatePicker',
+        is_required: true,
+        sort_order: 2,
+        configuration: {}
+      }
+    ]
+    },
+    {
+      name: 'Fila de Integrações',
+      group: 'Integrações e Resiliência',
+      properties: [
+      {
+        id: 'fila-1',
+        object_type_slug: 'integration_queue',
+        name: 'Serviço Alvo',
+        slug: 'servico_alvo',
+        data_type: 'string',
+        ui_component: 'TextInput',
+        is_required: true,
+        sort_order: 1,
+        configuration: {}
+      },
+      {
+        id: 'fila-2',
+        object_type_slug: 'integration_queue',
+        name: 'Tentativas',
+        slug: 'tentativas',
+        data_type: 'number',
+        ui_component: 'TextInput',
+        is_required: true,
+        sort_order: 2,
+        configuration: {}
+      }
+    ]
+    }
+  ];
+  const availableObjectGroups = Array.from(new Set(objectCatalog.map((objectItem) => objectItem.group)));
+  const normalizedSelectedGroup = selectedObjectGroup.trim().toLowerCase();
+  const isAllGroupsSelected = normalizedSelectedGroup === 'todos';
+  const availableObjectNames = objectCatalog
+    .filter((objectItem) => isAllGroupsSelected || objectItem.group.toLowerCase() === normalizedSelectedGroup)
+    .map((objectItem) => objectItem.name);
+  const objectPropertyCatalog: Record<string, ObjectProperty[]> = Object.fromEntries(
+    objectCatalog.map((objectItem) => [objectItem.name, objectItem.properties])
+  );
+  const activeObjectName = selectedObjectName || initialType.name;
+  const displayedProperties = objectPropertyCatalog[activeObjectName] ?? [];
 
-  const dataTypes = ['string', 'number', 'decimal', 'boolean', 'date', 'json'];
-  const uiComponents = ['TextInput', 'MaskedInput', 'CurrencyInput', 'StatusBadge', 'RatingBadge', 'DatePicker', 'Checkbox'];
+  useEffect(() => {
+    setSelectedProp(null);
+  }, [activeObjectName]);
 
   const renderDynamicProperties = () => (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -73,44 +204,51 @@ export const ConfigEngine: React.FC<ConfigEngineProps> = ({ initialType, initial
               <h3 className="font-bold text-slate-800 text-sm uppercase tracking-wider">Definição do Objeto</h3>
             </div>
             <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nome do Objeto</label>
-                <input 
-                  type="text" 
-                  value={initialType.name} 
-                  readOnly
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded text-sm font-medium text-slate-700"
-                />
-              </div>
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Slug (ID do Sistema)</label>
-                <div className="flex items-center gap-2 px-3 py-2 bg-slate-100 border border-slate-200 rounded text-xs font-mono text-slate-500">
-                  <Code size={14} />
-                  {initialType.slug}
+              <div className="rounded-lg border border-indigo-100 bg-indigo-50/40 p-3">
+                <label className="block text-[10px] font-bold text-indigo-500 uppercase mb-1">Grupo de Objetos</label>
+                <div className="space-y-1">
+                  <select
+                    value={selectedObjectGroup}
+                    onChange={(e) => {
+                      setSelectedObjectGroup(e.target.value);
+                      setSelectedObjectName('');
+                    }}
+                    className="w-full px-3 py-2 bg-white border border-indigo-200 rounded text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none"
+                  >
+                    <option value="Todos">Todos</option>
+                    {availableObjectGroups.map((group) => (
+                      <option key={group} value={group}>
+                        {group}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-[10px] text-indigo-500/80">Selecione o grupo para filtrar os objetos por categoria.</p>
                 </div>
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Tabela Física (PostgreSQL)</label>
-                <div className="flex items-center gap-2 px-3 py-2 bg-slate-100 border border-slate-200 rounded text-xs font-mono text-slate-500">
-                  <Layout size={14} />
-                  {initialType.table_name}
+                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nome do Objeto</label>
+                <div className="space-y-1">
+                  <input
+                    type="text"
+                    list="object-name-options"
+                    value={selectedObjectName}
+                    onChange={(e) => setSelectedObjectName(e.target.value)}
+                    placeholder={initialType.name}
+                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded text-sm font-medium text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none"
+                  />
+                  <datalist id="object-name-options">
+                    {availableObjectNames.map((objectName) => (
+                      <option key={objectName} value={objectName} />
+                    ))}
+                  </datalist>
+                  <p className="text-[10px] text-slate-400">
+                    Campo com busca: selecione um grupo (opcional) e digite para filtrar.
+                  </p>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="bg-indigo-900 rounded-xl p-6 text-white shadow-xl">
-            <h4 className="font-bold mb-2 flex items-center gap-2">
-              <Settings className="w-4 h-4 text-indigo-400" />
-              Engine Status
-            </h4>
-            <p className="text-xs text-indigo-200 leading-relaxed mb-4">
-              O motor MetaGov está operando em modo <strong>Hot-Reload</strong>. Alterações nos metadados abaixo refletirão instantaneamente em todas as telas que consomem o slug <code>{initialType.slug}</code>.
-            </p>
-            <div className="h-1 bg-indigo-800 rounded-full overflow-hidden">
-              <div className="h-full bg-indigo-400 w-full animate-pulse"></div>
-            </div>
-          </div>
         </div>
 
         {/* Main: Properties Management */}
@@ -123,105 +261,84 @@ export const ConfigEngine: React.FC<ConfigEngineProps> = ({ initialType, initial
               </div>
             </div>
             
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="bg-slate-50/50 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                    <th className="px-6 py-3">Ordem</th>
-                    <th className="px-6 py-3">Nome Exibição</th>
-                    <th className="px-6 py-3">Tipo Dado</th>
-                    <th className="px-6 py-3">Componente UI</th>
-                    <th className="px-6 py-3 text-right">Ações</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {properties.map((prop) => (
-                    <tr key={prop.id} className={`hover:bg-slate-50/50 transition-colors cursor-pointer ${selectedProp?.id === prop.id ? 'bg-indigo-50/50' : ''}`} onClick={() => setSelectedProp(prop)}>
-                      <td className="px-6 py-4 text-xs font-mono text-slate-400">#{prop.sort_order}</td>
-                      <td className="px-6 py-4">
-                        <div className="flex flex-col">
-                          <span className="text-sm font-bold text-slate-700">{prop.name}</span>
-                          <span className="text-[10px] font-mono text-slate-400">{prop.slug}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200 font-mono">
-                          {prop.data_type}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded border border-indigo-100 font-bold">
-                          {prop.ui_component}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <button className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-white rounded transition-all">
-                            <Edit3 size={14} />
-                          </button>
-                          <button className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-white rounded transition-all">
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="p-4 space-y-3">
+              {displayedProperties.map((prop) => (
+                <button
+                  key={prop.id}
+                  onClick={() => setSelectedProp(prop)}
+                  className={`w-full text-left p-4 rounded-xl border transition-all ${
+                    selectedProp?.id === prop.id
+                      ? 'border-indigo-300 bg-indigo-50/60'
+                      : 'border-slate-200 bg-white hover:border-indigo-200 hover:bg-slate-50'
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-start gap-4">
+                      <span className="text-xs font-mono text-slate-400 mt-1">#{prop.sort_order}</span>
+                      <div>
+                        <p className="text-sm font-bold text-slate-800">{prop.name}</p>
+                        <p className="text-[11px] font-mono text-slate-500">{prop.slug}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200 font-mono">
+                        {prop.data_type}
+                      </span>
+                      <span className="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded border border-indigo-100 font-bold">
+                        {prop.ui_component}
+                      </span>
+                      <ChevronRight className="w-4 h-4 text-slate-400" />
+                    </div>
+                  </div>
+                </button>
+              ))}
+              {displayedProperties.length === 0 && (
+                <div className="p-6 text-sm text-slate-500 text-center border border-dashed border-slate-200 rounded-xl bg-slate-50">
+                  Nenhuma propriedade encontrada para o objeto selecionado.
+                </div>
+              )}
             </div>
           </div>
-
-          {/* Editor Panel (Conditional) */}
-          {selectedProp && (
-            <div className="bg-white rounded-xl border-2 border-indigo-500 shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
-              <div className="px-6 py-4 bg-indigo-500 text-white flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Edit3 className="w-4 h-4" />
-                  <h3 className="font-bold text-sm uppercase tracking-wider">Editando: {selectedProp.name}</h3>
-                </div>
-                <button onClick={() => setSelectedProp(null)} className="text-white/80 hover:text-white">
-                  <ChevronRight className="w-5 h-5 rotate-90" />
-                </button>
-              </div>
-              <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nome de Exibição (Label)</label>
-                    <input type="text" defaultValue={selectedProp.name} className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Tipo de Dado</label>
-                    <select className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
-                      {dataTypes.map(t => <option key={t} value={t} selected={t === selectedProp.data_type}>{t}</option>)}
-                    </select>
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Componente de UI</label>
-                    <select className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
-                      {uiComponents.map(c => <option key={c} value={c} selected={c === selectedProp.ui_component}>{c}</option>)}
-                    </select>
-                  </div>
-                  <div className="flex items-center gap-4 pt-6">
-                    <label className="flex items-center gap-2 cursor-pointer group">
-                      <input type="checkbox" defaultChecked={selectedProp.is_required} className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" />
-                      <span className="text-xs font-bold text-slate-600 group-hover:text-indigo-600 transition-colors">Campo Obrigatório</span>
-                    </label>
-                  </div>
-                </div>
-                <div className="md:col-span-2 flex justify-end gap-3 pt-4 border-t border-slate-100">
-                  <button onClick={() => setSelectedProp(null)} className="px-6 py-2 text-sm font-bold text-slate-500 hover:text-slate-700 transition-all">Cancelar</button>
-                  <button className="flex items-center gap-2 bg-indigo-600 text-white px-8 py-2 rounded-lg font-bold text-sm shadow-lg shadow-indigo-500/20 hover:bg-indigo-700 transition-all">
-                    <Save size={18} />
-                    Salvar Metadados
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
+
+      {/* Popup de Detalhes da Propriedade */}
+      {selectedProp && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center p-4">
+          <div className="w-full max-w-3xl bg-white rounded-2xl border border-slate-200 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="px-6 py-4 bg-indigo-600 text-white flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Edit3 className="w-4 h-4" />
+                <h3 className="font-bold text-sm uppercase tracking-wider">Detalhes do Objeto</h3>
+              </div>
+              <button onClick={() => setSelectedProp(null)} className="text-white/80 hover:text-white">
+                <ChevronRight className="w-5 h-5 rotate-90" />
+              </button>
+            </div>
+
+            <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+              <DetailField label="ID" value={selectedProp.id} mono />
+              <DetailField label="Ordem" value={`#${selectedProp.sort_order}`} mono />
+              <DetailField label="Nome de Exibição" value={selectedProp.name} />
+              <DetailField label="Slug" value={selectedProp.slug} mono />
+              <DetailField label="Tipo de Dado" value={selectedProp.data_type} mono />
+              <DetailField label="Componente UI" value={selectedProp.ui_component} />
+              <DetailField label="Objeto (slug)" value={selectedProp.object_type_slug} mono />
+              <DetailField label="Campo Obrigatório" value={selectedProp.is_required ? 'Sim' : 'Não'} />
+            </div>
+
+            <div className="px-6 py-4 border-t border-slate-100 flex justify-end gap-3">
+              <button onClick={() => setSelectedProp(null)} className="px-4 py-2 text-sm font-bold text-slate-500 hover:text-slate-700 transition-all">
+                Fechar
+              </button>
+              <button className="flex items-center gap-2 bg-indigo-600 text-white px-5 py-2 rounded-lg font-bold text-sm shadow-lg shadow-indigo-500/20 hover:bg-indigo-700 transition-all">
+                <Save size={16} />
+                Editar Metadados
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 
@@ -633,6 +750,77 @@ export const ConfigEngine: React.FC<ConfigEngineProps> = ({ initialType, initial
     </div>
   );
 
+  const renderSystemFlow = () => {
+    const flowSteps = [
+      {
+        title: '1. Cadastro da Secretaria/Órgão',
+        description: 'Criação da secretaria em sec_organization e definição de escopo organizacional.',
+      },
+      {
+        title: '2. Vinculação de Usuários e Perfis',
+        description: 'Associação de usuários à secretaria e configuração de permissões por cargo.',
+      },
+      {
+        title: '3. Configuração do Objeto (MetaGov)',
+        description: 'Definição de propriedades dinâmicas, validações e regras de workflow para o objeto.',
+      },
+      {
+        title: '4. Entrada/Importação de Dados',
+        description: 'Cadastro de fichas de dívida ativa (obj_fda) e ingestão de dados por integrações.',
+      },
+      {
+        title: '5. Emissão e Gestão de CDA',
+        description: 'Geração de certidões (obj_cda), análise de status e preparação para cobrança.',
+      },
+      {
+        title: '6. Cobrança, Pagamentos e PIX',
+        description: 'Acompanhamento de pagamentos, conciliação financeira e eventos de arrecadação.',
+      },
+      {
+        title: '7. Jurídico e Negociação',
+        description: 'Encaminhamento para fluxo jurídico, parcelamentos, eventos de negociação e CADIM.',
+      },
+      {
+        title: '8. Auditoria, Observabilidade e Governança',
+        description: 'Rastreabilidade por logs/auditoria, alertas, housekeeping e evidências de governança.',
+      },
+    ];
+
+    return (
+      <div className="space-y-8 animate-in fade-in duration-500">
+        <div>
+          <h2 className="text-2xl font-bold text-slate-800">Fluxo de Funcionamento do Sistema</h2>
+          <p className="text-slate-500 text-sm">
+            Visão ponta a ponta do SIDAM: do cadastro das secretarias até operação, cobrança e governança.
+          </p>
+        </div>
+
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="px-6 py-4 bg-slate-50 border-b border-slate-100 flex items-center gap-2">
+            <GitBranch className="w-4 h-4 text-indigo-600" />
+            <h3 className="font-bold text-slate-800 text-sm uppercase tracking-wider">Etapas do Fluxo</h3>
+          </div>
+          <div className="p-6 space-y-4">
+            {flowSteps.map((step, index) => (
+              <div key={step.title} className="flex gap-4">
+                <div className="flex flex-col items-center">
+                  <div className="w-7 h-7 rounded-full bg-indigo-600 text-white text-xs font-bold flex items-center justify-center">
+                    {index + 1}
+                  </div>
+                  {index < flowSteps.length - 1 && <div className="w-px h-full bg-slate-200 mt-2" />}
+                </div>
+                <div className="pb-4">
+                  <h4 className="font-bold text-slate-800 text-sm">{step.title}</h4>
+                  <p className="text-xs text-slate-500 mt-1">{step.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="flex h-full bg-slate-50/50 overflow-hidden">
       {/* Sub-Sidebar */}
@@ -676,6 +864,12 @@ export const ConfigEngine: React.FC<ConfigEngineProps> = ({ initialType, initial
             active={activeSubTab === 'security'} 
             onClick={() => setActiveSubTab('security')} 
           />
+          <SubNavItem
+            icon={<GitBranch size={18} />}
+            label="Fluxo de Funcionamento"
+            active={activeSubTab === 'system_flow'}
+            onClick={() => setActiveSubTab('system_flow')}
+          />
         </nav>
 
         <div className="p-4 border-t border-slate-100">
@@ -699,6 +893,7 @@ export const ConfigEngine: React.FC<ConfigEngineProps> = ({ initialType, initial
           {activeSubTab === 'permissions' && renderPermissions()}
           {activeSubTab === 'customization' && renderCustomization()}
           {activeSubTab === 'security' && renderSecurity()}
+          {activeSubTab === 'system_flow' && renderSystemFlow()}
         </div>
       </main>
     </div>
@@ -719,6 +914,17 @@ function SubNavItem({ icon, label, active, onClick }: { icon: React.ReactNode, l
       <span>{label}</span>
       {active && <ChevronRight size={14} className="ml-auto text-indigo-400" />}
     </button>
+  );
+}
+
+function DetailField({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
+  return (
+    <div>
+      <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">{label}</label>
+      <div className={`w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded text-sm text-slate-700 ${mono ? 'font-mono' : 'font-medium'}`}>
+        {value}
+      </div>
+    </div>
   );
 }
 

@@ -1,0 +1,53 @@
+name: DB CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, work]
+
+jobs:
+  db-migrations-and-tests:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgis/postgis:15-3.4
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: sidam_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d sidam_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/sidam_ci
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Wait for database
+        run: |
+          for i in {1..30}; do
+            pg_isready -d "$DATABASE_URL" && exit 0
+            sleep 2
+          done
+          echo "Database did not become ready in time"
+          exit 1
+
+      - name: Smoke migration (empty database)
+        run: ./scripts/db/run_migrations.sh
+
+      - name: Drift check (reapply migrations)
+        run: ./scripts/db/run_migrations.sh
+
+      - name: Run SQL tests
+        run: ./scripts/db/run_tests.sh

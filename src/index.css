@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
   --color-dark-bg: #0f172a;
@@ -48,11 +49,15 @@
 
   /* Firefox support */
   * {
-    scrollbar-width: none; /* Hidden by default in Firefox */
+    scrollbar-width: thin; /* largura constante para não deslocar layout */
+    scrollbar-color: transparent transparent;
   }
 
   *:hover {
-    scrollbar-width: thin; /* Show thin scrollbar on hover */
     scrollbar-color: rgba(203, 213, 225, 0.4) transparent;
+  }
+
+  .stable-scrollbar {
+    scrollbar-gutter: stable;
   }
 }

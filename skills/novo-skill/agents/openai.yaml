@@ -1,0 +1,4 @@
+interface:
+  display_name: "Novo Skill"
+  short_description: "Cria e valida a estrutura de um skill Codex novo."
+  default_prompt: "Use este skill para configurar um novo skill com gatilhos claros, estrutura mínima e validação final."

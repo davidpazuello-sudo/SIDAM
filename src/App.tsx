@@ -13,7 +13,8 @@ import { SecretariatManager } from './components/config/SecretariatManager';
 import { UserProfile } from './components/profile/UserProfile';
 import { BrandingProvider, useBranding } from './context/BrandingContext';
 import { useAuth } from './context/AuthContext';
-import { ObjectType, ObjectProperty, FDA } from './types';
+import { useObjectType } from './hooks/useObjectType';
+import { useFDAList } from './hooks/useFDAList';
 import { 
   LayoutDashboard, 
   FileSearch, 
@@ -38,142 +39,6 @@ import {
   Sun,
   Moon
 } from 'lucide-react';
-
-// --- MOCK DATA (Simulando o retorno do Supabase) ---
-
-const MOCK_CONFIG_TYPE: ObjectType = {
-  slug: 'fda',
-  name: 'Ficha Cadastral da Dívida Ativa',
-  storage_mode: 'table',
-  table_name: 'obj_fda',
-  configuration: {}
-};
-
-const MOCK_CONFIG_PROPS: ObjectProperty[] = [
-  { id: '1', object_type_slug: 'fda', name: 'Nº Inscrição', slug: 'numero_inscricao', data_type: 'string', ui_component: 'TextInput', is_required: false, sort_order: 1, configuration: {} },
-  { id: '2', object_type_slug: 'fda', name: 'CPF/CNPJ', slug: 'documento_devedor', data_type: 'string', ui_component: 'MaskedInput', is_required: true, sort_order: 2, configuration: {} },
-  { id: '3', object_type_slug: 'fda', name: 'Devedor', slug: 'devedor_nome', data_type: 'string', ui_component: 'TextInput', is_required: true, sort_order: 3, configuration: {} },
-  { id: '4', object_type_slug: 'fda', name: 'Valor Principal', slug: 'valor_principal_inscrito', data_type: 'decimal', ui_component: 'CurrencyInput', is_required: true, sort_order: 4, configuration: {} },
-  { id: '5', object_type_slug: 'fda', name: 'Status', slug: 'status_atual', data_type: 'string', ui_component: 'StatusBadge', is_required: true, sort_order: 5, configuration: {} },
-  { id: '6', object_type_slug: 'fda', name: 'Rating', slug: 'rating_recuperabilidade', data_type: 'string', ui_component: 'RatingBadge', is_required: false, sort_order: 6, configuration: {} },
-];
-
-const MOCK_FDA_DATA: FDA[] = [
-  { 
-    id: '1', 
-    organization_id: 'org1', 
-    numero_inscricao: '2024.0001-A', 
-    numero_processo_administrativo: 'SEM-2023-001',
-    documento_devedor: '123.456.789-00', 
-    devedor_nome: 'João da Silva Sauro', 
-    valor_principal_inscrito: 15450.80, 
-    natureza_debito: 'Multa Ambiental',
-    ano_exercicio: 2023,
-    status_atual: 'ATIVA', 
-    rating_recuperabilidade: 'A', 
-    gigo_score: 100,
-    is_blockchain_sealed: true,
-    has_attachment: true,
-    is_segredo_justica: false, 
-    created_at: '', 
-    updated_at: '' 
-  },
-  { 
-    id: '2', 
-    organization_id: 'org1', 
-    numero_inscricao: '2023.0842-B', 
-    numero_processo_administrativo: 'SEM-2022-452',
-    documento_devedor: '98.765.432/0001-99', 
-    devedor_nome: 'Indústrias ACME Ltda', 
-    valor_principal_inscrito: 1250000.00, 
-    natureza_debito: 'Taxa de Lixo',
-    ano_exercicio: 2022,
-    status_atual: 'EM_TRIAGEM', 
-    rating_recuperabilidade: 'C', 
-    gigo_score: 85,
-    is_blockchain_sealed: false,
-    has_attachment: true,
-    is_segredo_justica: false, 
-    created_at: '', 
-    updated_at: '' 
-  },
-  { 
-    id: '3', 
-    organization_id: 'org1', 
-    numero_inscricao: undefined, 
-    numero_processo_administrativo: 'SEM-2024-015',
-    documento_devedor: '456.789.123-11', 
-    devedor_nome: 'Maria Oliveira Santos', 
-    valor_principal_inscrito: 2100.00, 
-    natureza_debito: 'Infração de Obra',
-    ano_exercicio: 2024,
-    status_atual: 'RASCUNHO', 
-    rating_recuperabilidade: 'B', 
-    gigo_score: 100,
-    is_blockchain_sealed: false,
-    has_attachment: true,
-    is_segredo_justica: false, 
-    created_at: '', 
-    updated_at: '' 
-  },
-  { 
-    id: '4', 
-    organization_id: 'org1', 
-    numero_inscricao: undefined, 
-    numero_processo_administrativo: 'SEM-2024-099',
-    documento_devedor: '111.222.333-44', 
-    devedor_nome: 'Empresa de Teste S.A.', 
-    valor_principal_inscrito: 450.00, 
-    natureza_debito: 'Multa Ambiental',
-    ano_exercicio: 2024,
-    status_atual: 'QUARENTENA', 
-    rating_recuperabilidade: 'D', 
-    gigo_score: 40,
-    is_blockchain_sealed: false,
-    has_attachment: false,
-    is_segredo_justica: true, 
-    created_at: '', 
-    updated_at: '' 
-  },
-  { 
-    id: '5', 
-    organization_id: 'org2', 
-    numero_inscricao: '2024.0108-C', 
-    numero_processo_administrativo: 'SEMSA-2024-021',
-    documento_devedor: '222.333.444-55', 
-    devedor_nome: 'Clínica Vida Plena', 
-    valor_principal_inscrito: 8750.40, 
-    natureza_debito: 'Taxa Sanitária',
-    ano_exercicio: 2024,
-    status_atual: 'ATIVA', 
-    rating_recuperabilidade: 'B', 
-    gigo_score: 92,
-    is_blockchain_sealed: true,
-    has_attachment: true,
-    is_segredo_justica: false, 
-    created_at: '', 
-    updated_at: '' 
-  },
-  { 
-    id: '6', 
-    organization_id: 'org3', 
-    numero_inscricao: '2023.2210-D', 
-    numero_processo_administrativo: 'SEMMAS-2023-778',
-    documento_devedor: '12.345.678/0001-10', 
-    devedor_nome: 'Construtora Rio Norte', 
-    valor_principal_inscrito: 193400.00, 
-    natureza_debito: 'Infração de Licenciamento',
-    ano_exercicio: 2023,
-    status_atual: 'ATIVA', 
-    rating_recuperabilidade: 'C', 
-    gigo_score: 80,
-    is_blockchain_sealed: false,
-    has_attachment: true,
-    is_segredo_justica: false, 
-    created_at: '', 
-    updated_at: '' 
-  },
-];
 
 export default function App() {
   return (
@@ -200,6 +65,22 @@ function AppContent() {
     return window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
   const { branding } = useBranding();
+  const {
+    data: configType,
+    properties: configProperties,
+    isLoading: isConfigLoading,
+    error: configError,
+  } = useObjectType('fda');
+  const {
+    data: allDebts,
+    isLoading: isAllDebtsLoading,
+    error: allDebtsError,
+  } = useFDAList();
+  const {
+    data: secretariatDebts,
+    isLoading: isSecretariatDebtsLoading,
+    error: secretariatDebtsError,
+  } = useFDAList({ organizationId: secretariatOrganizationId });
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDarkMode);
@@ -221,11 +102,6 @@ function AppContent() {
   const toggleTheme = () => {
     setIsDarkMode((prev) => !prev);
   };
-
-  const allDebts = MOCK_FDA_DATA;
-  const secretariatDebts = MOCK_FDA_DATA.filter(
-    (debt) => debt.organization_id === secretariatOrganizationId
-  );
 
   return (
     <div className="h-screen w-full bg-slate-50 dark:bg-slate-950 flex font-sans text-slate-900 dark:text-slate-100 transition-colors duration-300 overflow-hidden">
@@ -431,11 +307,21 @@ function AppContent() {
                     <span>Nova Inscrição</span>
                   </button>
                 </div>
-                <MetaGovRenderer 
-                  objectSlug="fda" 
-                  data={allDebts} 
-                  config={{ type: MOCK_CONFIG_TYPE, properties: MOCK_CONFIG_PROPS }} 
-                />
+                {isConfigLoading || isAllDebtsLoading ? (
+                  <div className="rounded-lg border border-slate-200 bg-white p-6 text-sm text-slate-500">
+                    Carregando configuração e dados da Dívida Ativa...
+                  </div>
+                ) : configError || allDebtsError || !configType ? (
+                  <div className="rounded-lg border border-rose-200 bg-rose-50 p-6 text-sm text-rose-700">
+                    {configError || allDebtsError || 'Não foi possível carregar o objeto FDA.'}
+                  </div>
+                ) : (
+                  <MetaGovRenderer 
+                    objectSlug="fda" 
+                    data={allDebts} 
+                    config={{ type: configType, properties: configProperties }} 
+                  />
+                )}
               </>
             )}
 
@@ -451,11 +337,21 @@ function AppContent() {
                     <span>Nova Inscrição</span>
                   </button>
                 </div>
-                <MetaGovRenderer 
-                  objectSlug="fda" 
-                  data={secretariatDebts} 
-                  config={{ type: MOCK_CONFIG_TYPE, properties: MOCK_CONFIG_PROPS }} 
-                />
+                {isConfigLoading || isSecretariatDebtsLoading ? (
+                  <div className="rounded-lg border border-slate-200 bg-white p-6 text-sm text-slate-500">
+                    Carregando configuração e dados da sua secretaria...
+                  </div>
+                ) : configError || secretariatDebtsError || !configType ? (
+                  <div className="rounded-lg border border-rose-200 bg-rose-50 p-6 text-sm text-rose-700">
+                    {configError || secretariatDebtsError || 'Não foi possível carregar o objeto FDA.'}
+                  </div>
+                ) : (
+                  <MetaGovRenderer 
+                    objectSlug="fda" 
+                    data={secretariatDebts} 
+                    config={{ type: configType, properties: configProperties }} 
+                  />
+                )}
               </>
             )}
 
@@ -476,10 +372,16 @@ function AppContent() {
             )}
 
             {activeTab === 'config' && (
-              <ConfigEngine 
-                initialType={MOCK_CONFIG_TYPE} 
-                initialProperties={MOCK_CONFIG_PROPS} 
-              />
+              configType ? (
+                <ConfigEngine 
+                  initialType={configType} 
+                  initialProperties={configProperties} 
+                />
+              ) : (
+                <div className="rounded-lg border border-rose-200 bg-rose-50 p-6 text-sm text-rose-700">
+                  {configError || 'Não foi possível carregar a configuração dinâmica do objeto.'}
+                </div>
+              )
             )}
 
             {activeTab === 'secretariats' && (

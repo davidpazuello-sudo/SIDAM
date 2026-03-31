@@ -4,6 +4,7 @@ set -euo pipefail
 DB_URL="${DATABASE_URL:?DATABASE_URL is required}"
 
 MIGRATIONS=(
+  "supabase/migrations/00_auth_schema_stub.sql"
   "supabase/migrations/01_core_schema.sql"
   "supabase/migrations/02_security_rls.sql"
   "supabase/migrations/03_config_engine.sql"

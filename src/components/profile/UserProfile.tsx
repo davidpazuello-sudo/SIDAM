@@ -15,18 +15,67 @@ import {
   Key
 } from 'lucide-react';
 import { motion } from 'motion/react';
+import { useAuth } from '../../context/AuthContext';
+
+const DEFAULT_PROFILE = {
+  name: 'Usuário SIDAM',
+  role: 'Servidor',
+  department: 'Órgão não informado',
+  joinDate: 'Não informado',
+};
+
+function toInitials(name: string): string {
+  const parts = name
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2);
+
+  if (parts.length === 0) {
+    return 'US';
+  }
+
+  return parts.map((part) => part[0]?.toUpperCase() ?? '').join('');
+}
+
+function maskEmail(email?: string): string {
+  if (!email || !email.includes('@')) {
+    return 'email-nao-informado@sidam.local';
+  }
+
+  const [localPart, domain] = email.split('@');
+  if (localPart.length <= 2) {
+    return `${localPart[0] ?? '*'}***@${domain}`;
+  }
+
+  return `${localPart.slice(0, 2)}***@${domain}`;
+}
 
 export function UserProfile() {
   const [showPassword, setShowPassword] = useState(false);
   const [activeSection, setActiveSection] = useState('personal');
+  const { user: authenticatedUser } = useAuth();
 
   const user = {
-    name: 'David Pazuello',
-    email: 'david.pazuello@sasi.com.br',
-    role: 'Super-Admin',
-    department: 'Procuradoria Geral do Município',
-    joinDate: '12 de Janeiro, 2024',
-    initials: 'DP'
+    name:
+      (authenticatedUser?.user_metadata?.full_name as string | undefined) ??
+      (authenticatedUser?.user_metadata?.name as string | undefined) ??
+      DEFAULT_PROFILE.name,
+    email: maskEmail(authenticatedUser?.email),
+    role:
+      (authenticatedUser?.user_metadata?.role as string | undefined) ??
+      DEFAULT_PROFILE.role,
+    department:
+      (authenticatedUser?.user_metadata?.department as string | undefined) ??
+      DEFAULT_PROFILE.department,
+    joinDate:
+      (authenticatedUser?.user_metadata?.join_date as string | undefined) ??
+      DEFAULT_PROFILE.joinDate,
+    initials: toInitials(
+      ((authenticatedUser?.user_metadata?.full_name as string | undefined) ??
+        (authenticatedUser?.user_metadata?.name as string | undefined) ??
+        DEFAULT_PROFILE.name) as string
+    ),
   };
 
   return (
@@ -133,6 +182,7 @@ export function UserProfile() {
                       <input 
                         type={showPassword ? 'text' : 'password'} 
                         placeholder="Senha Atual"
+                        autoComplete="current-password"
                         className="w-full pl-4 pr-12 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                       />
                     </div>
@@ -140,6 +190,7 @@ export function UserProfile() {
                       <input 
                         type={showPassword ? 'text' : 'password'} 
                         placeholder="Nova Senha"
+                        autoComplete="new-password"
                         className="w-full pl-4 pr-12 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                       />
                       <button 
@@ -153,6 +204,7 @@ export function UserProfile() {
                       <input 
                         type={showPassword ? 'text' : 'password'} 
                         placeholder="Confirmar Nova Senha"
+                        autoComplete="new-password"
                         className="w-full pl-4 pr-12 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                       />
                     </div>
@@ -186,7 +238,7 @@ export function UserProfile() {
                   <ActivityItem 
                     title="Login realizado" 
                     time="Hoje, 08:45" 
-                    description="Acesso via Chrome em Windows 11 (IP: 187.45.2.10)" 
+                    description="Acesso via navegador autorizado (IP mascarado: 187.45.xxx.xxx)" 
                     type="login"
                   />
                   <ActivityItem 
